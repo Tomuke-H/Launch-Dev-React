@@ -7,16 +7,16 @@ trigger:
 
 variables:
   # Azure Resource Manager connection created during pipeline creation
-  azureServiceConnectionId: '6b994312-c0a5-4e37-9ff1-f87b1cd93080'
+  azureServiceConnectionId: '2e292021-35d8-4cf0-85e8-225a57c849d5'
   
   # Web app name
-  webAppName: 'AgileWaterfall-dev'
+  webAppName: 'launchmodel-dev'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
 
   # Environment name
-  environmentName: 'AgileWaterfall-dev'
+  environmentName: 'launchmodel-dev'
 
   # Project root folder. Point to the folder containing manage.py file.
   projectRoot: $(System.DefaultWorkingDirectory)
@@ -79,7 +79,7 @@ stages:
             displayName: 'Use Python version'
 
           - task: AzureWebApp@1
-            displayName: 'Deploy Azure Web App : AgileWaterfall-dev'
+            displayName: 'Deploy Azure Web App : launchmodel-dev'
             inputs:
               azureSubscription: $(azureServiceConnectionId)
               appName: $(webAppName)
