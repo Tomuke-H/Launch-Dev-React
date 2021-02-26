@@ -7,4 +7,3 @@ pyodbc
 pandas
 flask_sqlalchemy
 datetime
-uuid

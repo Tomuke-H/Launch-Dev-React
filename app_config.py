@@ -2,7 +2,7 @@ import os
 
 CLIENT_ID = "9c66ac20-b784-4480-9966-a33083937ac9" # Application (client) ID of app registration
 
-CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+CLIENT_SECRET = os.getenv("MICROSOFT_PROVIDER_AUTHENTICATION_SECRET")
 if not CLIENT_SECRET:
     raise ValueError("Need to define CLIENT_SECRET environment variable")
 
@@ -10,7 +10,7 @@ AUTHORITY = "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011d
 
 SQLRESOURCE = 'HTTPS://database.windows.net/.default'
 
-SQLSERVER= os.getenv("SQL_SERVER")
+SQLSERVER= os.getenv("SQL_Server")
 if not SQLSERVER:
     raise ValueError("Need to define SQL_SERVER environment variable")
 

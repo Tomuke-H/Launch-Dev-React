@@ -11,7 +11,6 @@ import os
 from os.path import join, dirname, realpath
 import pandas as pd
 import io
-
 from sqlalchemy.sql.expression import insert
 from sql import getSQLConnection
 from datetime import date, datetime
@@ -20,12 +19,12 @@ from datetime import date, datetime
 
 
 # when working local, set Local to True and copy app_config to app_config_local to put in values.  This will be in Git ignore and won't be pulled into source.  
-#Local = True
+Local = False
 
-#if Local==False:
-import app_config as app_config
-#else:
-#    import app_config_local as app_config
+if Local==False:
+    import app_config as app_config
+else:
+    import app_config_local as app_config
 
 
 #import pandas as pd
