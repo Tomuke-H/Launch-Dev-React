@@ -128,16 +128,16 @@
               });
 
 
-          $.ajax({
+            $.ajax({
             method: "GET",
             url: "launchparameters",
             success: function(response){
-            console.log(response);
+            //console.log(response);
             var s = '<option selected="selected" value ="-1">Please Select a Plan</option>';
-              for (var i=0; i <response;i++){
-                s += '<option value="' + response[i].LPlanId + '">' + response[i].LPlanName + '</option>';  
+            for (var i=0; i <response.length;i++){
+              s += '<option value="' + response[i].LPlanId + '">' + response[i].LPlanName + '</option>';  
               }  
-              $("#sel_launchplans").html(s);  
+              $("#sel_launchprofile").html(s);  
             }
           });
 
