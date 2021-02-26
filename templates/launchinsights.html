@@ -135,7 +135,7 @@
             console.log(response);
             var s = '<option selected="selected" value ="-1">Please Select a Plan</option>';
               for (var i=0; i <response;i++){
-                s += '<option value="' + response[i].Id + '">' + response[i].LaunchPlanName + '</option>';  
+                s += '<option value="' + response[i].LPlanId + '">' + response[i].LPlanName + '</option>';  
               }  
               $("#sel_launchplans").html(s);  
             }
