@@ -4,7 +4,8 @@ from flask import Flask, jsonify, request, render_template, session, url_for, re
 from flask_session import Session # https://pythonhosted.org/Flask-Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
-import msal
+import msal 
+import msal  
 import struct
 import pyodbc
 import os
