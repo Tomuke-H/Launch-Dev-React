@@ -22,7 +22,7 @@ from datetime import date, datetime
 # when working local, set Local to True and copy app_config to app_config_local to put in values.  This will be in Git ignore and won't be pulled into source.  
 Local = False
 
-if Local==False:
+if Local is False:
     import app_config as app_config
 else:
     import app_config_local as app_config
