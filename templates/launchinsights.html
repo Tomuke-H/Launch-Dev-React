@@ -77,7 +77,7 @@
         <div class="col">
           <form class="form-group" action="uploadfile" method="POST" id="upload-file" enctype="multipart/form-data">
             <label for="launchprofilesDropdown"><b>Version</b></label>
-            <select class="form-control" id="sel_launchprofile" name="launchprofilesDropdown" aria-expanded="false"></select> 
+            <select class="form-control" id="sel_launchprofileVersion" name="launchprofilesDropdown" aria-expanded="false"></select> 
         </div>
       </div>
       <br>
@@ -111,37 +111,52 @@
       $(document).ready(function (){ 
         $.ajax({
             method: "GET",
-            url: "launchprofiles",
+            url: "launchparameters",
             success: function(response){
             //console.log(response);
-            var s = '<option value ="-1">Please Select a Profile</option>';
+            var s = '<option selected="selected" value ="-1">Please Select a Profile</option>';
             for (var i=0; i <response.length;i++){
-              s += '<option value="' + response[i].id + '">' + response[i].Name + '</option>';  
+              s += '<option value="' + response[i].LProfileId + '">' + response[i].LProfileName + '</option>';  
               }  
               $("#sel_launchprofile").html(s);  
             }
           });
 
+          $('#sel_launchprofile').change(function () {
+             var selectedText = $(this).find("option:selected").text();
+             console.log(selectedText)
+              });
+
 
           $.ajax({
             method: "GET",
-            url: "launchplanning",
+            url: "launchparameters",
             success: function(response){
-            //console.log(response);
-            var s = '<option value ="-1">Please Select a Plan</option>';
-            for (var i=0; i <response.length;i++){
-              s += '<option value="' + response[i].Id + '">' + response[i].LaunchPlanName + '</option>';  
+            console.log(response);
+            var s = '<option selected="selected" value ="-1">Please Select a Plan</option>';
+              for (var i=0; i <response;i++){
+                s += '<option value="' + response[i].Id + '">' + response[i].LaunchPlanName + '</option>';  
               }  
               $("#sel_launchplans").html(s);  
             }
           });
+
+
+     
+
+
+
+
+
+          
 
     });
 
 
      
  });
- 
+
+
 
     
     

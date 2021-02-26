@@ -63,7 +63,8 @@
     <br>
     <h1 style="text-align:center">Upload & Assign Launch Plans</h1>
     <br>
-    <div class="container-fluid" style="align-self: center;"></div>
+    <div class="container-fluid" style="align-self: center;">
+      
     <p style="text-align:center">The select a launch profile to assign your uploaded launch plan to. After uploading your Launch Plan template click "Upload File" and we will generate your automated ship and build plan.</p>
 
 <form class="px-4 py-3" action="uploadfile" method="POST" id="upload-file" enctype="multipart/form-data">
@@ -75,6 +76,7 @@
   <input type="submit" value="Upload File" name="submit" id="uploaded">
 </form>
 </div>
+
  
     <!-- Optional JavaScript; choose one of the two! -->
   
@@ -98,7 +100,25 @@
 
         });
 
-   
+        $ (document).ready ( function(){
+             $('input:submit').attr('disabled',true);
+              $('input:file').change(
+              function(){
+            if ($(this).val()){
+                $('input:submit').removeAttr('disabled'); 
+            }
+            else {
+                $('input:submit').attr('disabled',true);
+            }
+        });
+});   
+
+
+        $('#uploaded').on('click',function(){
+          alert("Successfully Processed Your Launch Plan!");
+        });
+
+        
       
         
 

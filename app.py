@@ -20,12 +20,12 @@ from datetime import date, datetime
 
 
 # when working local, set Local to True and copy app_config to app_config_local to put in values.  This will be in Git ignore and won't be pulled into source.  
-Local = True
+#Local = True
 
-if Local==False:
-    import app_config as app_config
-else:
-    import app_config_local as app_config
+#if Local==False:
+import app_config as app_config
+#else:
+#    import app_config_local as app_config
 
 
 #import pandas as pd
@@ -196,6 +196,25 @@ def launchplans():
             print(jsonify(results))
         return jsonify(results)
 
+@app.route('/launchparameters', methods=['GET', 'POST'])
+def launchparameters():
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+    if request.method == 'GET':
+        data = request.get_json()
+        conn = getSQLConnection(app_config=app_config)
+        with conn.cursor() as cursor:
+            id = cursor.execute("SELECT DISTINCT * FROM [launchmodeldev].[dbo].[vw_LaunchPlans]")
+            columns = [column[0] for column in id.description]
+            print(columns)
+            results = []
+            for row in id.fetchall():
+                results.append(dict(zip(columns, row)))
+            print(jsonify(results))
+        return jsonify(results)
+
+
+
 
 '''          
     @app.route('/launchprofiles',methods=['GET','POST'])
@@ -321,7 +340,7 @@ def uploadFiles():
                 cursor.execute(str(insert),params)    
         cursor.close()
         #print(df)
-    return("Success")
+    return redirect("launchplans")
 
 '''
 @app.route("/uploadfile", methods=['POST'])
