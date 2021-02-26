@@ -72,7 +72,7 @@
  </select>
   <br>
   <input type="file" name="fileupload" id="fileToUpload">
-  <input type="submit" value="Upload File" name="submit">
+  <input type="submit" value="Upload File" name="submit" id="uploaded">
 </form>
 </div>
  
@@ -88,15 +88,21 @@
             url: "launchprofiles",
             success: function(response){
             //console.log(response);
-            var s = '<option value ="-1">Please Select a Profile</option>';
+            var s = '<option selected="selected" value ="-1">Please Select a Profile</option>';
             for (var i=0; i <response.length;i++){
-              s += '<option value="' + response[i].id + '">' + response[i].Name + '</option>';  
+              s += '<option value="' + response[i].Id + '">' + response[i].Name + '</option>';  
               }  
               $("#sel_launchprofile").html(s);  
             }
           });
 
-    });
+        });
+
+   
+      
+        
+
+    
 
 
     

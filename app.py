@@ -11,8 +11,12 @@ import os
 from os.path import join, dirname, realpath
 import pandas as pd
 import io
+
+from sqlalchemy.sql.expression import insert
 from sql import getSQLConnection
-from datetime import datetime
+from datetime import date, datetime
+
+
 
 
 # when working local, set Local to True and copy app_config to app_config_local to put in values.  This will be in Git ignore and won't be pulled into source.  
@@ -44,8 +48,8 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 @app.route('/')
 def home():
     #un comment below for auth.
-    if not session.get("user"):
-        return redirect(url_for("login"))
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
     return render_template('index.html')
 
 @app.route("/login")
@@ -57,20 +61,20 @@ def login():
 
 @app.route('/launchplans')
 def launchesearch():
-    if not session.get("user"):
-        return redirect(url_for("login"))
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
     return render_template('launchplans.html')   
 
 @app.route('/launchinsights')
 def launchinsights():
-    if not session.get("user"):
-        return redirect(url_for("login"))
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
     return render_template('launchinsights.html')
 
 @app.route('/launchprofile')
 def launches():
-    if not session.get("user"):
-        return redirect(url_for("login"))
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
     return render_template('launchprofile.html')
 
 @app.route(app_config.REDIRECT_PATH)  # Its absolute URL must match your app's redirect_uri set in AAD
@@ -92,9 +96,10 @@ def logout():
     session.clear()  # Wipe out user and its token cache from session
     return redirect(  # Also logout from your tenant's web session
         app_config.AUTHORITY + "/oauth2/v2.0/logout" +
-        "?post_logout_redirect_uri=" + url_for("index", _external=True))
+        "?post_logout_redirect_uri=" + url_for("/", _external=True))
 
 # Auth Helper Functions
+
 def _load_cache():
     cache = msal.SerializableTokenCache()
     if session.get("token_cache"):
@@ -119,7 +124,9 @@ def _get_token_from_cache(scope=None):
         result = cca.acquire_token_silent(scope, account=accounts[0])
         _save_cache(cache)
         return result
+
 # SQL Helper functions
+
 def _getSQLToken():
     clientSecret = app_config.CLIENT_SECRET
     clientID = app_config.CLIENT_ID
@@ -127,12 +134,13 @@ def _getSQLToken():
     context = msal.ConfidentialClientApplication(client_id=clientID, client_credential=clientSecret,authority=authority_url)
     token = context.acquire_token_for_client(scopes=[app_config.SQLRESOURCE])
     return token
+
 #APIS     
 
 @app.route('/launchprofiles', methods=['GET', 'POST'])
 def launchprofiles():
-    if not session.get("user"):
-        return redirect(url_for("login"))
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
     if request.method == 'POST':
         data = request.form.to_dict()
         print(data)
@@ -168,13 +176,14 @@ def launchprofiles():
             results = []
             for row in id.fetchall():
                 results.append(dict(zip(columns, row)))
+                #print(row)
         return jsonify(results)
 
 @app.route('/launchplanning', methods=['GET', 'POST'])
 def launchplans():
-    if not session.get("user"):
-        return redirect(url_for("login"))
-     if request.method == 'GET':
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+    if request.method == 'GET':
         data = request.get_json()
         conn = getSQLConnection(app_config=app_config)
         with conn.cursor() as cursor:
@@ -248,6 +257,14 @@ launches = [
     'name':'FalconB'}
 ]
 '''
+@app.route('/launch/<string:name>/sku')
+def get_sku_in_launch(name):
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+    for launch in launches:
+        if launch["launchName"] == name:
+            return jsonify({'sku':launch['sku']})
+    return jsonify({"message":"Sku Not Found"})
 @app.route('/launchprofiles',methods=['GET'])
 def get_allLaunches():
     mylist = []
@@ -258,30 +275,53 @@ def get_allLaunches():
     return jsonify(mylist)
 '''
 
+
+
 @app.route("/uploadfile", methods=['POST'])
 def uploadFiles():
-    if not session.get("user"):
-        return redirect(url_for("login"))
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
     if request.method=="POST":
+        conn = getSQLConnection(app_config=app_config)
         f = request.files['fileupload']
-        print(f)
+        print(f) 
         form = request.form
+        FileName = f.filename
+        launchID = form.get('launchprofilesDropdown')
+        print(FileName, launchID)
         for key in form.keys():
+            print(FileName,launchID)
             for value in form.getlist(key):
                 print(key,":",value)
         fstring = f.read()
+        id = uuid.uuid1()
         text_obj = fstring.decode('UTF-8')
         data = io.StringIO(text_obj)
         df = pd.read_csv(data,sep=",")
-        #df = df.drop(label, inplace=True)
-        
-        #csv_dicts = [{k: v for k, v in row.items()} for row in csv.DictReader(fstring.splitlines(), skipinitialspace=True)]  
+        #df = df.iloc[3:]
+        print(df) 
+        """  df.columns=['Template',"LaunchProfileId",
+        "LaunchPlanName","ChangeDate",
+        "Version","UpdatedBy",
+        "Origin_Location","Destination_Country",
+        "Customer","Channel",
+        "Other","Date_Type",
+        "Target_Date","Qty",
+        "Fulfillment_Scenario","Model_Type",
+        "NodeModeOne","NodeModeTwo",
+        "NodeModeThree","NodeModeFour",
+        "NodeModeFive","NodeModeSix"] 
+        """
         print(df)
+        insert = "INSERT INTO [launchmodeldev].[dbo].[FactLaunchPlans](FileName,LaunchPlanId,LaunchProfileId,LaunchPlanName,ChangeDate,Version,UpdatedBy,Origin_Location,Destination_Country,Customer,Channel,Other,Date_Type,Target_Date,Qty,Fulfillment_Scenario,Model_Type,NodeModeOne,NodeModeTwo,NodeModeThree,NodeModeFour,NodeModeFive,NodeModeSix) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        with conn.cursor() as cursor:
+            for row in df.itertuples(): #iterrows():#itertuples()
+                print(row)
+                params = (FileName,id,launchID,row.LaunchPlanName,str(datetime.now()),row.Version,row.UpdatedBy,row.Origin_Location,row.Destination_Country,row.Customer,row.Channel,row.Other,row.Date_Type,str(row.Target_Date),row.Qty,row.Fulfillment_Scenario,row.Model_Type,row.NodeModeOne,row.NodeModeTwo,row.NodeModeThree,row.NodeModeFour,row.NodeModeFive,row.NodeModeSix)
+                cursor.execute(str(insert),params)    
+        cursor.close()
+        #print(df)
     return("Success")
-
-
-
-
 
 '''
 @app.route("/uploadfile", methods=['POST'])
@@ -310,8 +350,8 @@ def uploadFiles():
 #Post, add an item to a launch
 @app.route('/launch/<string:name>/sku',methods=['POST'])
 def create_sku_in_launch(name):
-    if not session.get("user"):
-        return redirect(url_for("login"))
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
     request_data = request.get_json()
     for launch in launches:
         if launch['launchName'] == name:
@@ -327,8 +367,8 @@ def create_sku_in_launch(name):
 #GET a specific Launch
 @app.route('/launch/<string:name>')
 def get_launch(name):
-    if not session.get("user"):
-        return redirect(url_for("login"))
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
     for launch in launches:
         if launch["launchName"] == name:
             return jsonify(launch)
@@ -337,8 +377,8 @@ def get_launch(name):
 #GET all skus in a specific launch 
 @app.route('/launch/<string:name>/sku')
 def get_sku_in_launch(name):
-    if not session.get("user"):
-        return redirect(url_for("login"))
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
     for launch in launches:
         if launch["launchName"] == name:
             return jsonify({'sku':launch['sku']})
