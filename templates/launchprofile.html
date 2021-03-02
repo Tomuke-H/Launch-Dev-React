@@ -323,12 +323,14 @@
         jQuery(document).ready(function(){
           $('#create').on('click',function(){       
           jQuery('#formdiv').toggle('show');
+          jQuery('#uploaddiv').toggle('hide');
           });
         });
 
         jQuery(document).ready(function(){
           $('#upload').on('click',function(){       
           jQuery('#uploaddiv').toggle('show');
+          jQuery('#formdiv').toggle('hide');
           });
         });
 
