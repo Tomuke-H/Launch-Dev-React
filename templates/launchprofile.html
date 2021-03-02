@@ -98,7 +98,7 @@
           </div>
           <div class="col-md-2">
             <label for="skuprofileid">Existing SKU Profile</label>
-            <input type="text" class="form-control is-invalid" placeholder="SKU Profile" id="skuprofileid" name='skuprofileid'>
+            <input type="text" class="form-control" placeholder="SKU Profile" id="skuprofileid" name='skuprofileid'>
           </div>
           <div class="col-md-6">
             <label for="descriptionid">Description</label>
@@ -181,9 +181,10 @@
           </div>
         </div>
         <br></br>
-        <br></br>
         <div class="form-group text-center">
         <button id='launchprofilecreated' type="submit" class="btn btn-primary" name='launchprofilecreated'>Save Launch Profile</button>
+        <br></br>
+        <br></br>
       </div>
           </form>
         </div>
@@ -316,6 +317,7 @@
         launchprofile = {};
 
         $("form").submit(function(event){
+          alert("Launch Profile Saved!");
           console.log($(this).serializeArray());
           //console.log({launchprofile:$(this).serializeArray()})
           data = $(this).serializeArray()
