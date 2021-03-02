@@ -160,6 +160,16 @@
         <br></br>
         <div class="row">
           <div class="col-md-2">
+            <label for="ipqregionid">IPQ Region(s)</label>
+            <select multiple class="form-control" type="text" placeholder="IPQ Regions" aria-label="IPQ Regions" id='ipqregionsid' name='ipqregionsid'>
+             <!--<option selected="selected" value ="-1"></option> !-->
+             <option value="null">AOC</option>
+              <option value="null">EOC</option>
+              <option value="null">APOC</option>
+              <option value="null">LOC</option>
+              </select>
+          </div>
+          <div class="col-md-2">
             <label for="retaildtsvolume">Retail DTS Volume</label>
             <input type="number" class="form-control" placeholder="Retail DTS Volume" aria-label="Retail DTS Volume" id=retaildtsvolume name='retaildtsvolume'>
           </div>
@@ -171,12 +181,12 @@
             <label for="msstoreipq">MS Store IPQ</label>
             <input type="number" class="form-control" placeholder="MS Store IPQ" aria-label="MS Store IPQ" id="msstoreipq" name='msstoreipq'>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-4">
           <label for="Description">Special Call Outs/ Notes</label>
             <div class="input-group">
               <div class="input-group-prepend" id="Description" name='Description'>
               </div>
-              <textarea class="form-control" aria-label="Description" placeholder="Notes" rows=4></textarea>
+              <textarea class="form-control" aria-label="Description" placeholder="Notes" rows=6></textarea>
             </div>
           </div>
         </div>
