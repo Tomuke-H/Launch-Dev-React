@@ -80,47 +80,100 @@
      <br></br>
       <form class="form-control" id="LaunchProfileForm">
         <div class="row">
-          <label for="launchnameid">Launch Name</label>
-          <div class="col-md-8"><input type="text" class="form-control" placeholder="Launch Name" id=launchnameid name='launchnameid'></div>
-          
-          <div class="col-md-2"><input type="text" class="form-control" placeholder="Code Name" id="codenameid" name='codenameid'></div>
+          <div class="col-md-6">
+            <label for="launchnameid">Launch Name</label>
+            <input type="text" class="form-control" placeholder="Launch Name" id=launchnameid name='launchnameid' required></div>
+          <div class="col-md-2">
+            <label for="codenameid">Code Name</label>
+            <input type="text" class="form-control is-invalid" placeholder="Code Name" id="codenameid" name='codenameid' required>
+              <div class="invalid-feedback">Please enter the Code Name</div>
           </div>
+          <div class="col-md-2">
+            <label for="annoucedid">Annouced (Y/N)</label>
+            <select type="text" class="form-control" placeholder="Announced (Y/N)" id="annoucedid" name='annoucedid'>
+              <option selected="selected" value ="0"></option>
+                    <option  value="Yes">Yes</option>
+                    <option value="No">No</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label for="pompoddid">POM/POD</label>
+            <select type="text" class="form-control" placeholder="POM/POD" id="pompodid" name='pompoddid'>
+              <option selected="selected" value ="0"></option>
+                    <option  value="POM">POM</option>
+                    <option value="POD">POD</option>
+            </select>
+          </div>
+        </div>
         <br></br>
         <div class="row">
           <div class="col">
             <label for="launchdateid">Launch Date</label>
-            <input type="date" class="form-control" placeholder="Launch Date" id="launchdateid" name='launchdateid'>
+            <input type="date" class="form-control is-invalid" placeholder="Launch Date" id="launchdateid" name='launchdateid' required>
+            <div class="invalid-feedback">
+            Please enter a valid launch date.
+            </div>
           </div>
+      	
+          
           <div class="col">
-            <label for="launchtypeid">Launch Type</label>
-            <input type="text" class="form-control" placeholder="Launch Type" aria-label="Type" id=launchtypeid name='launchtypeid'>
+            <label for="launchtypeid">Launch Type</label> 
+            <select type="text" id="launchtypeid"  placeholder="Launch Type" aria-label="Type"  class="form-control">
+             <option selected="selected" value ="-1">Select a Type</option>
+                  <option  value="GA">GA</option>
+                  <option value="MSD">MSD</option>
+                  <option value="FSD">FSD</option>
+              </select>
+            
+   
           </div>
           <div class="col">
             <label for="regionid">Region</label>
-            <input type="text" class="form-control" placeholder="Regions" aria-label="Regions" id=regionsid name='regionsid'>
+            <select multiple class="form-control" type="text" placeholder="Regions" aria-label="Regions" id='regionsid' name='regionsid'>
+             <option selected="selected" value ="-1">Select Region(s)</option>
+             <option value="null">AOC</option>
+              <option value="null">EOC</option>
+              <option value="null">APOC</option>
+              <option value="null">LOC</option>
+              </select>
           </div>
-          <div class="col">
-            <label for="annoucedateid">Annouce Date</label>
-            <input type="date" class="form-control" placeholder="Annouce Date" id="annoucedateid" name='annoucedateid'>
-        </div>
+           <div class="col-md-2">
+           <label for="ipqregionid">IPQ Region</label>
+            <select multiple class="form-control" type="text" placeholder="IPQ's by Region" aria-label="IPQ Region" id='ipqregionid' name='ipqregionid'>
+             <option selected="selected" value ="-1">Select Region(s)</option>
+             <option value="null">AOC</option>
+              <option value="null">EOC</option>
+              <option value="null">APOC</option>
+              <option value="null">LOC</option>
+              </select>
+          </div>
+        
         <br></br>
         <br></br>
         <div class="row">
-          <div class="col">
-            <label for="ipqregionid">IPQ Region</label>
-            <input type="text" class="form-control" placeholder="IPQ's by Region" aria-label="IPQ Region" id=ipqregionid name='ipqregionid'>
+          <div class="col-md-2">
+            <label for="annoucedateid">Annouce Date</label>
+            <input type="date" class="form-control" placeholder="Annouce Date" id="annoucedateid" name='annoucedateid'>
+        </div>
+           <div class="col-md-2">
+            <label for="pqsdateid">PQS Date</label>
+            <input type="date" class="form-control" placeholder="PQS Date" aria-label="PQS Date" id=pqsdateid name='pqsdateid'>
           </div>
-          <div class="col">
+          <div class="col-md-2">
             <label for="lobid">Line of Business</label>
             <input type="text" class="form-control" placeholder="Line of Business" aria-label="Line of Business" id=lobid name='lobid'>
           </div>
-          <div class="col">
+          <div class="col-md-2">
             <label for="retaildtsvolume">Retail DTS Volume</label>
-            <input type="text" class="form-control" placeholder="Retail DTS Volume" aria-label="Retail DTS Volume" id=retaildtsvolume name='retaildtsvolume'>
+            <input type="number" class="form-control" placeholder="Retail DTS Volume" aria-label="Retail DTS Volume" id=retaildtsvolume name='retaildtsvolume'>
           </div>
-          <div class="col">
-            <label for="pqsdateid">PQS Date</label>
-            <input type="date" class="form-control" placeholder="PQS Date" aria-label="PQS Date" id=pqsdateid name='pqsdateid'>
+            <div class="col-md-2">
+            <label for="retaildcvolume">Retail DC Volume</label>
+            <input type="number" class="form-control" placeholder="Retail DTS Volume" aria-label="Retail DTS Volume" id=retaildcvolume name='retaildcvolume'>
+          </div>
+            <div class="col-md-2">
+            <label for="msstoreipq">MS Store IPQ</label>
+            <input type="number" class="form-control" placeholder="MS Store IPQ" aria-label="MS Store IPQ" id="msstoreipq" name='msstoreipq'>
           </div>
         </div>
         <br></br>
@@ -165,6 +218,10 @@
                 }
         });
       });
+
+     // $('#launchtypeid').multiselect({		
+	//	nonSelectedText: 'Select Region(s)'				
+	 //   });
       function Export_JSON_to_CSV(JSONString, ReportName, isShowHeader) {
             var arrJsonData = typeof JSONString != 'object' ? JSON.parse(JSONString) : JSONString;
             var CSV = '';
