@@ -198,6 +198,14 @@
       </div>
           </form>
         </div>
+        <div class="container-fluid" id="uploaddiv" style="display:none">
+        <form class="px-4 py-3" action="uploadfile" method="POST" id="upload-file" enctype="multipart/form-data">
+          <h4>Please Choose and Upload a Launch Profile Template</h4>
+          <br>
+          <input type="file" name="fileupload" id="fileToUpload">
+          <input type="submit" value="Upload File" name="submit" id="uploaded">
+        </form>
+      </div>
              <!-- 
           </div>
           <br></br>
@@ -318,9 +326,13 @@
           });
         });
 
-        $('#upload').on('click',function(){
-          alert("Uploaded CSV");
+        jQuery(document).ready(function(){
+          $('#upload').on('click',function(){       
+          jQuery('#uploaddiv').toggle('show');
+          });
         });
+
+  
 
 
         //LaunchDictionary
