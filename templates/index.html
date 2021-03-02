@@ -85,18 +85,22 @@
       $(document).ready(function (){
         $('#launchprofiletemplate').on('click',function(){
           var data = [{
-            'AnnouceDate': '',
-            'ChangeDate': '',
+            'LaunchProfileName': '',
+            'LineOfBusiness': '',
             'CodeName': '',
-            'IPQRegion': '',
-            'LOB': '',
-            'LaunchDate':'',
+            'ExistingSKUProfile': '',
+            'Description':'',
+            'POM/POD': '',
+            'LaunchDate': '',
             'LaunchType': '',
-            'Name': '',
-            'Notes': '',
-            'PQSDate': '',
-            'Region': '',
-            'RetailDTSVolume':''
+            'Region(s)': '',
+            'AnnouceDate': '',
+            'Announced(Y/N)':'',
+            'IPQRegion(s)':'',
+            'Retail DC Volume':'',
+            'Retail DTS Volume':'',
+            'MS Store IPQ':'',
+            'Special Call Outs':''
               }];
           ReportName = 'LaunchProfile-Template';
           Export_JSON_to_CSV(data, ReportName, true);
