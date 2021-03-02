@@ -89,16 +89,19 @@
         <div class="row">
           <div class="col-md-2">
             <label for="lobid">Line of Business</label>
-            <input type="text" class="form-control" placeholder="Line of Business" aria-label="Line of Business" id="lobid" name='lobid'>
+            <select class="form-control" id="lobid" name='lobid' aria-expanded="false">
+            </select>
           </div>
           <div class="col-md-2">
             <label for="codenameid">Code Name</label>
-            <input type="text" class="form-control is-invalid" placeholder="Code Name" id="codenameid" name='codenameid' required>
+            <select class="form-control is-invalid" id="codenameid" name='codenameid' aria-expanded="false" required>
+            </select>
               <div class="invalid-feedback">Please enter the Code Name</div>
           </div>
           <div class="col-md-2">
             <label for="skuprofileid">Existing SKU Profile</label>
-            <input type="text" class="form-control" placeholder="SKU Profile" id="skuprofileid" name='skuprofileid'>
+            <select class="form-control" id="skuprofileid" name='skuprofileid' aria-expanded="false">
+            </select>
           </div>
           <div class="col-md-6">
             <label for="descriptionid">Description</label>
@@ -265,6 +268,46 @@
     <script type="text/javascript">
 
       $(document).ready(function(){
+
+        $.ajax({
+            method: "GET",
+            url: "launchskuattributes",
+            success: function(response){
+            //console.log(response);
+            var s = '<option selected="selected" value ="0"></option>';
+            for (var i=0; i <response.length;i++){
+              s += '<option value="' + response[i].PlanningLOB + '">' + response[i].PlanningLOB + '</option>';  
+              }  
+              $("#lobid").html(s);  
+            }
+          });
+
+          $.ajax({
+            method: "GET",
+            url: "launchskuattributes",
+            success: function(response){
+            //console.log(response);
+            var s = '<option selected="selected" value ="0"></option>';
+            for (var i=0; i <response.length;i++){
+              s += '<option value="' + response[i].BusinessUnitName + '">' + response[i].BusinessUnitName + '</option>';  
+              }  
+              $("#skuprofileid").html(s);  
+            }
+          });
+          
+          $.ajax({
+            method: "GET",
+            url: "launchskuattributes",
+            success: function(response){
+            //console.log(response);
+            var s = '<option selected="selected" value ="0"></option>';
+            for (var i=0; i <response.length;i++){
+              s += '<option value="' + response[i].MSPressSeriesName + '">' + response[i].MSPressSeriesName + '</option>';  
+              }  
+              $("#codenameid").html(s);  
+            }
+          });
+
 
         $('#download').on('click',function(){
           alert("Downloaded CSV");

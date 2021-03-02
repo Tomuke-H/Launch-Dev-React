@@ -213,6 +213,23 @@ def launchparameters():
             print(jsonify(results))
         return jsonify(results)
 
+@app.route('/launchskuattributes', methods=['GET', 'POST'])
+def launchskuattributes():
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+    if request.method == 'GET':
+        data = request.get_json()
+        conn = getSQLConnection(app_config=app_config)
+        with conn.cursor() as cursor:
+            id = cursor.execute("SELECT DISTINCT * FROM [launchmodeldev].[dbo].[DimSKUAttributes]")
+            columns = [column[0] for column in id.description]
+            print(columns)
+            results = []
+            for row in id.fetchall():
+                results.append(dict(zip(columns, row)))
+            print(jsonify(results))
+        return jsonify(results)
+
 
 
 
