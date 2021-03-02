@@ -80,64 +80,124 @@
      <br></br>
       <form class="form-control" id="LaunchProfileForm">
         <div class="row">
-          <div class="col-md-6">
-            <label for="launchnameid">Launch Name</label>
-            <input type="text" class="form-control" placeholder="Launch Name" id=launchnameid name='launchnameid' required></div>
+          <div class="col-md-4">
+            <label for="launchprofilenameid">Launch Profile Name</label>
+            <input type="text" class="form-control" placeholder="Name" aria-label="Name" id="launchprofilenameid" name='launchprofilenameid'>
+          </div>
+        </div>
+        <br></br>
+        <div class="row">
+          <div class="col-md-2">
+            <label for="lobid">Line of Business</label>
+            <input type="text" class="form-control" placeholder="Line of Business" aria-label="Line of Business" id="lobid" name='lobid'>
+          </div>
           <div class="col-md-2">
             <label for="codenameid">Code Name</label>
             <input type="text" class="form-control is-invalid" placeholder="Code Name" id="codenameid" name='codenameid' required>
               <div class="invalid-feedback">Please enter the Code Name</div>
           </div>
           <div class="col-md-2">
-            <label for="annoucedid">Annouced (Y/N)</label>
-            <select type="text" class="form-control" placeholder="Announced (Y/N)" id="annoucedid" name='annoucedid'>
-              <option selected="selected" value ="0"></option>
-                    <option  value="Yes">Yes</option>
-                    <option value="No">No</option>
-            </select>
+            <label for="skuprofileid">Existing SKU Profile</label>
+            <input type="text" class="form-control is-invalid" placeholder="SKU Profile" id="skuprofileid" name='skuprofileid'>
           </div>
+          <div class="col-md-6">
+            <label for="descriptionid">Description</label>
+            <div class="input-group">
+              <div class="input-group-prepend" id="descriptionid" name='descriptioneid'></div>
+              <textarea class="form-control" aria-label="Description" placeholder="Description" rows=2></textarea>
+              </div>
+            </div>
+          </div>
+          <br></br>
+          <div class="row">
+            <div class="col-md-2">
+              <label for="pompoddid">POM/POD</label>
+              <select type="text" class="form-control" placeholder="POM/POD" id="pompodid" name='pompoddid'>
+                <option selected="selected" value ="0"></option>
+                      <option  value="POM">POM</option>
+                      <option value="POD">POD</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label for="launchdateid">Launch Date</label>
+              <input type="date" class="form-control is-invalid" placeholder="Launch Date" id="launchdateid" name='launchdateid' required>
+              <div class="invalid-feedback">
+              Please enter a valid launch date.
+              </div>
+            </div>
+            <div class="col-md-2">
+              <label for="launchtypeid">Launch Type</label> 
+              <select type="text" id="launchtypeid"  placeholder="Launch Type" aria-label="Type"  class="form-control">
+               <option selected="selected" value ="-1">Select a Type</option>
+                    <option  value="GA">GA</option>
+                    <option value="MSD">MSD</option>
+                    <option value="FSD">FSD</option>
+                </select>
+              </div>
+                <div class="col-md-2">
+                  <label for="regionid">Region</label>
+                  <select multiple class="form-control" type="text" placeholder="Regions" aria-label="Regions" id='regionsid' name='regionsid'>
+                   <option selected="selected" value ="-1">Select Region(s)</option>
+                   <option value="null">AOC</option>
+                    <option value="null">EOC</option>
+                    <option value="null">APOC</option>
+                    <option value="null">LOC</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                  <label for="annoucedateid">Annouce Date</label>
+                  <input type="date" class="form-control" placeholder="Annouce Date" id="annoucedateid" name='annoucedateid'>
+              </div>
+              <div class="col-md-2">
+                <label for="annoucedid">Annouced (Y/N)</label>
+                <select type="text" class="form-control" placeholder="Announced (Y/N)" id="annoucedid" name='annoucedid'>
+                  <option selected="selected" value ="0"></option>
+                        <option  value="Yes">Yes</option>
+                        <option value="No">No</option>
+                </select>
+              </div>
+            </div>
+        <br></br>
+        <div class="row">
           <div class="col-md-2">
-            <label for="pompoddid">POM/POD</label>
-            <select type="text" class="form-control" placeholder="POM/POD" id="pompodid" name='pompoddid'>
-              <option selected="selected" value ="0"></option>
-                    <option  value="POM">POM</option>
-                    <option value="POD">POD</option>
-            </select>
+            <label for="retaildtsvolume">Retail DTS Volume</label>
+            <input type="number" class="form-control" placeholder="Retail DTS Volume" aria-label="Retail DTS Volume" id=retaildtsvolume name='retaildtsvolume'>
+          </div>
+            <div class="col-md-2">
+            <label for="retaildcvolume">Retail DC Volume</label>
+            <input type="number" class="form-control" placeholder="Retail DTS Volume" aria-label="Retail DTS Volume" id=retaildcvolume name='retaildcvolume'>
+          </div>
+            <div class="col-md-2">
+            <label for="msstoreipq">MS Store IPQ</label>
+            <input type="number" class="form-control" placeholder="MS Store IPQ" aria-label="MS Store IPQ" id="msstoreipq" name='msstoreipq'>
+          </div>
+          <div class="col-md-6">
+          <label for="Description">Special Call Outs/ Notes</label>
+            <div class="input-group">
+              <div class="input-group-prepend" id="Description" name='Description'>
+              </div>
+              <textarea class="form-control" aria-label="Description" placeholder="Notes" rows=4></textarea>
+            </div>
           </div>
         </div>
         <br></br>
-        <div class="row">
-          <div class="col">
-            <label for="launchdateid">Launch Date</label>
-            <input type="date" class="form-control is-invalid" placeholder="Launch Date" id="launchdateid" name='launchdateid' required>
-            <div class="invalid-feedback">
-            Please enter a valid launch date.
-            </div>
+        <br></br>
+        <div class="form-group text-center">
+        <button id='launchprofilecreated' type="submit" class="btn btn-primary" name='launchprofilecreated'>Save Launch Profile</button>
+      </div>
+          </form>
+        </div>
+             <!-- 
           </div>
-      	
+          <br></br>
+          <div class="form-group text-center">
+          <button id='launchprofilecreated' type="submit" class="btn btn-primary" name='launchprofilecreated'>Save Launch Profile</button>
+        </div>
+        </form>
+      </div>
+        </div>
           
-          <div class="col">
-            <label for="launchtypeid">Launch Type</label> 
-            <select type="text" id="launchtypeid"  placeholder="Launch Type" aria-label="Type"  class="form-control">
-             <option selected="selected" value ="-1">Select a Type</option>
-                  <option  value="GA">GA</option>
-                  <option value="MSD">MSD</option>
-                  <option value="FSD">FSD</option>
-              </select>
-            
-   
-          </div>
-          <div class="col">
-            <label for="regionid">Region</label>
-            <select multiple class="form-control" type="text" placeholder="Regions" aria-label="Regions" id='regionsid' name='regionsid'>
-             <option selected="selected" value ="-1">Select Region(s)</option>
-             <option value="null">AOC</option>
-              <option value="null">EOC</option>
-              <option value="null">APOC</option>
-              <option value="null">LOC</option>
-              </select>
-          </div>
-           <div class="col-md-2">
+         <div class="col-md-2"> 
            <label for="ipqregionid">IPQ Region</label>
             <select multiple class="form-control" type="text" placeholder="IPQ's by Region" aria-label="IPQ Region" id='ipqregionid' name='ipqregionid'>
              <option selected="selected" value ="-1">Select Region(s)</option>
@@ -159,22 +219,8 @@
             <label for="pqsdateid">PQS Date</label>
             <input type="date" class="form-control" placeholder="PQS Date" aria-label="PQS Date" id=pqsdateid name='pqsdateid'>
           </div>
-          <div class="col-md-2">
-            <label for="lobid">Line of Business</label>
-            <input type="text" class="form-control" placeholder="Line of Business" aria-label="Line of Business" id=lobid name='lobid'>
-          </div>
-          <div class="col-md-2">
-            <label for="retaildtsvolume">Retail DTS Volume</label>
-            <input type="number" class="form-control" placeholder="Retail DTS Volume" aria-label="Retail DTS Volume" id=retaildtsvolume name='retaildtsvolume'>
-          </div>
-            <div class="col-md-2">
-            <label for="retaildcvolume">Retail DC Volume</label>
-            <input type="number" class="form-control" placeholder="Retail DTS Volume" aria-label="Retail DTS Volume" id=retaildcvolume name='retaildcvolume'>
-          </div>
-            <div class="col-md-2">
-            <label for="msstoreipq">MS Store IPQ</label>
-            <input type="number" class="form-control" placeholder="MS Store IPQ" aria-label="MS Store IPQ" id="msstoreipq" name='msstoreipq'>
-          </div>
+         
+        
         </div>
         <br></br>
         <br></br>
@@ -189,12 +235,9 @@
         </div>
           </div>
         </div>
-        <br></br>
-        <div class="form-group text-center">
-        <button id='launchprofilecreated' type="submit" class="btn btn-primary" name='launchprofilecreated'>Save Launch Profile</button>
-      </div>
+        
       </form>
-    </div>
+    </div>!-->
     <!-- Optional JavaScript; choose one of the two! -->
 
     <!-- Option 1: Bootstrap Bundle with Popper -->
