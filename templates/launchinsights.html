@@ -9,8 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
     <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.5.1.js"></script>
     <title>Launch Planning</title>
-    <link rel='icon' type='image/x-icon' href='./images/favicon.ico' />
-    
+ 
   </head>
   
   <body>
@@ -64,35 +63,16 @@
     <h1 style="text-align:center" >Launch Modeling Analytics</h1>
     <div class="container-fluid" style="align-self: center">
       <div class="row align-items-start">
-        <div class="col">
-          <form class="form-group" action="uploadfile" method="POST" id="upload-file" enctype="multipart/form-data">
-            <label for="launchprofilesDropdown"><b>Launch Profile</b></label>
-            <select class="form-control" id="sel_launchprofile" name="launchprofilesDropdown" aria-expanded="false"></select> 
-        </div>
-        <div class="col">
-          <form class="form-group" action="uploadfile" method="POST" id="upload-file" enctype="multipart/form-data">
-            <label for="launchplansDropdown"><b>Launch Plan</b></label>
-            <select class="form-control" id="sel_launchplans" name="launchplansDropdown" aria-expanded="false"></select> 
-        </div>
-        <div class="col">
-          <form class="form-group" action="uploadfile" method="POST" id="upload-file" enctype="multipart/form-data">
-            <label for="launchprofilesDropdown"><b>Version</b></label>
-            <select class="form-control" id="sel_launchprofileVersion" name="launchprofilesDropdown" aria-expanded="false"></select> 
-        </div>
+       
       </div>
       <br>
       <div class="row align-items-start">
         <div class="col">
-          <button type="button" class="btn btn-primary btn-lg" style="align-content: center;">Download Ship Plan</button>
-          <button type="button" class="btn btn-secondary btn-lg"style="align-content: center;">Download Build Plan</button>
-          <!--<button type="button" id="viewreporting" class="btn btn-secondary btn-lg" style="align-content: center;">View Reporting</button> -->
+  
       </div>
 
-    <br></br>
-    <br></br>
-    <br></br>
     
-    <iframe class='iframe' width="1600" height="800"
+    <iframe class='iframe' width="1600" height="1200"
     src="https://msit.powerbi.com/reportEmbed?reportId=84ddc1e8-e893-4642-912f-b2e265089a64&autoAuth=true&ctid=72f988bf-86f1-41af-91ab-2d7cd011db47&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly9kZi1tc2l0LXNjdXMtcmVkaXJlY3QuYW5hbHlzaXMud2luZG93cy5uZXQvIn0%3D" 
     frameborder="0" allowFullScreen="true"></iframe>
     
@@ -141,7 +121,97 @@
             }
           });
 
+          $.ajax({
+            method: "GET",
+            url: "launchparameters",
+            success: function(response){
+            //console.log(response);
+            var s = '<option selected="selected" value ="-1">All</option>';
+            for (var i=0; i <response.length;i++){
+              s += '<option value="' + response[i].LPlanVersion + '">' + response[i].LPlanVersion + '</option>';  
+              }  
+              $("#sel_launchplanversion").html(s);  
+            }
+          });
 
+          
+        $('#downloadshipplan').on('click',function(){
+          alert("Downloaded CSV");
+          var title = 'ShipPlan-'
+          var version = $("#sel_launchplanversion").find("option:selected").text();
+          var selectedvalue = $("#sel_launchprofile").find("option:selected").text();
+          $.ajax({
+                type: "GET",
+                dataType:'json',
+                url: "launchprofiles?launchprofileparameter="+selectedvalue,
+                success: function(response){
+              //console.log(response);
+                JsonData = response;
+                console.log(JsonData);
+                ReportName = title.concat(version);
+                //JsonData.filter(d =>d.name === selectedvalue);
+                Export_JSON_to_CSV(JsonData, ReportName, true);
+                }
+        });
+      });
+
+      $('#downloadbuildplan').on('click',function(){
+          alert("Downloaded CSV");
+          var title = 'BuildPlan - '
+          var version = $("#sel_launchplanversion").find("option:selected").text();
+          var selectedvalue = $("#sel_launchprofile").find("option:selected").text();
+          $.ajax({
+                type: "GET",
+                dataType:'json',
+                url: "launchprofiles?launchprofileparameter="+selectedvalue,
+                success: function(response){
+              //console.log(response);
+                JsonData = response;
+                console.log(JsonData);
+                ReportName = title.concat(version);
+                //JsonData.filter(d =>d.name === selectedvalue);
+                Export_JSON_to_CSV(JsonData, ReportName, true);
+                }
+        });
+      });
+
+     // $('#launchtypeid').multiselect({		
+	//	nonSelectedText: 'Select Region(s)'				
+	 //   });
+      function Export_JSON_to_CSV(JSONString, ReportName, isShowHeader) {
+            var arrJsonData = typeof JSONString != 'object' ? JSON.parse(JSONString) : JSONString;
+            var CSV = '';
+            CSV += ReportName + '\r\n\n';
+            if (isShowHeader) {
+                var row = "";
+                for (var index in arrJsonData[0]) {
+                    row += index + ',';
+                }
+                row = row.slice(0, -1);
+                CSV += row + '\r\n';
+            }
+            for (var i = 0; i < arrJsonData.length; i++) {
+                var row = "";
+                for (var index in arrJsonData[i]) {
+                    row += '"' + arrJsonData[i][index] + '",';
+                }
+                row.slice(0, row.length - 1);
+                CSV += row + '\r\n';
+            }
+            if (CSV == '') {
+                alert("Invalid JsonData");
+                return;
+            }
+            fileName = ReportName.replace(/ /g, "_");
+            var uri = 'Data:text/csv;charset=utf-8,' + escape(CSV);
+            var link = document.createElement("a");
+            link.href = uri;
+            link.style = "visibility:hidden";
+            link.download = fileName + ".csv";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
      
 
 

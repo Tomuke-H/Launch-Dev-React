@@ -9,8 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
     <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.5.1.js"></script>
     <title>Launch Planning</title>
-    <link rel='icon' type='image/x-icon' href='./images/favicon.ico' />
     
+
   </head>
   
   <body>
@@ -66,8 +66,14 @@
     <div class="container-fluid" style="align-self: center;">
       
     <p style="text-align:center">The select a launch profile to assign your uploaded launch plan to. After uploading your Launch Plan template click "Upload File" and we will generate your automated ship and build plan.</p>
+    <div class="text-center">
+      <button type="button" id="downloadlaunchplantemplate" class="btn btn-primary"style="align-content: center;">Download Launch Plan Template</button>
+      <button type="button" id="editlaunchplans" class="btn btn-primary"style="align-content: center;">Download Previous Launch Plans</button>
+      <button type="button" id="addlaunchplans" class="btn btn-primary"style="align-content: center;">Add a New Launch Plan</button>
+    </div>
 
-<form class="px-4 py-3" action="uploadfile" method="POST" id="upload-file" enctype="multipart/form-data">
+<!--Upload HTML-->
+<form class="px-4 py-3" action="uploadlaunchplanfile" method="POST" id="upload-file" enctype="multipart/form-data" style="display:none">
   <label for="launchprofilesDropdown"><b>Launch Profile</b></label>
 <select class="form-control" id="sel_launchprofile" name="launchprofilesDropdown" aria-expanded="false">
  </select>
@@ -75,6 +81,25 @@
   <input type="file" name="fileupload" id="fileToUpload">
   <input type="submit" value="Upload File" name="submit" id="uploaded">
 </form>
+
+<!--Download HTML-->
+
+<form class="px-4 py-3" action="uploadfile" method="POST" id="download-file" enctype="multipart/form-data" style="align-content: center;">
+<div class="col-md-3">
+ <label for="launchplanDropdown"><b>Launch Plan</b></label>
+<select class="form-control" id="sel_launchplan" name="launchplanDropdown" aria-expanded="false">
+ </select>
+</div>
+<div class="col-md-3">
+ <label for="launchplanversionDropdown"><b>Launch Plan Version</b></label>
+ <select class="form-control" id="sel_launchplanversion" name="launchplanversionDropdown" aria-expanded="false">
+  </select>
+  <br>
+</div>
+  <button type="button" id="downloadlaunchplans" class="btn btn-primary"style="align-content: center;">Download Selected Launch Plans</button>
+</form>
+
+
 </div>
 
  
@@ -84,20 +109,158 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
   
     <script type="text/javascript">
-      $(document).ready(function (){ 
-        $.ajax({
+
+      $(document).ready(function (){
+       
+     var beer = $.ajax({
+    method: "GET",
+    url: "launchparameters",
+    async: false,
+    dataType: 'json'
+}).responseJSON;
+
+    console.log(beer);
+
+      //Populate DropDown for Launch Selection//
+      $.ajax({
             method: "GET",
-            url: "launchprofiles",
+            url: "launchparameters",
             success: function(response){
             //console.log(response);
-            var s = '<option selected="selected" value ="-1">Please Select a Profile</option>';
+            var s = '<option selected="selected" value ="-1">All</option>';
             for (var i=0; i <response.length;i++){
-              s += '<option value="' + response[i].Id + '">' + response[i].Name + '</option>';  
+              s += '<option value="' + response[i].LProfileId + '">' + response[i].LProfileName + '</option>';  
               }  
               $("#sel_launchprofile").html(s);  
             }
           });
+     
+          $('#sel_launchprofile').change(function () {
+             var selectedText = $(this).find("option:selected").text();
+             console.log(selectedText)
+             var selectedvalue = $("#sel_launchprofile").find("option:selected").text();
+              });
 
+          //Downloading//
+
+              $.ajax({
+            method: "GET",
+            url: "launchparameters",
+            success: function(response){
+            //console.log(response);
+            var s = '<option selected="selected" value ="-1">All</option>';
+            for (var i=0; i <response.length;i++){
+              s += '<option value="' + response[i].LProfileId + '">' + response[i].LProfileName + '</option>';  
+              }  
+              $("#sel_launchplan_download").html(s);  
+            }
+          });
+
+          //Profile Dropdown Variable Assignment//
+          $('#sel_launchplan_download').change(function () {
+             var selectedText = $(this).find("option:selected").text();
+             console.log(selectedText)
+             var planSelectedValue = $("#sel_launchplan_download").find("option:selected").text();
+              });
+
+          
+          $.ajax({
+            method: "GET",
+            url: "launchparameters",
+            success: function(response){
+            console.log(response);
+            var s = '<option selected="selected" value ="-1">All</option>';
+            for (var i=0; i <response.length;i++){
+              console.log(response[i].LProfileName);
+              if(response[i].LProfileName){
+              s += '<option value="' + response[i].LPlanName + '">' + response[i].LPlanName + '</option>';  
+              $("#sel_launchplan").html(s);  }}
+            }
+          });
+
+          
+
+          $.ajax({
+            method: "GET",
+            url: "launchparameters",
+            success: function(response){
+            //console.log(response);
+            var s = '<option selected="selected" value ="-1">All</option>';
+            for (var i=0; i <response.length;i++){
+              s += '<option value="' + response[i].LPlanVersion + '">' + response[i].LPlanVersion + '</option>';  
+              }  
+              $("#sel_launchplanversion").html(s);  
+            }
+          });
+
+
+          $('#sel_launchplan_download').change(function () {
+             var selectedText = $(this).find("option:selected").text();
+             console.log(selectedText)
+              });
+
+
+          jQuery(document).ready(function(){
+            $('#downloadlaunchplantemplate').on('click',function(){
+              console.log("Button was Hit")
+              alert("Downloading CSV Template");
+              $.ajax({
+                type: "GET",
+                dataType:'json',
+                url: "launchplanning",
+                success: function(response){
+              //console.log(response);
+                JsonData = response;
+                //console.log(JsonData); logging the wrong order need to fix here/
+          //end
+          /*var data = [{
+            'OriginLocation': '',
+            'DestinationCountry': '',
+            'Customer': '',
+            'Channel': '',
+            'Other': '',
+            'DateType':'',
+            'TargetDate': '',
+            'Qty': '',
+            'FulfillmentScenario': '',
+            'ModelType': '',
+            'NodeModeOne': '',
+            'NodeModeTwo': '',
+            'NodeModeThree': '',
+            'NodeModeFour': '',
+            'NodeModeFive': '',
+            'NodeModeSix': ''
+              }];*/
+            ReportName = 'LaunchPlans-Template';
+            Export_JSON_to_CSV(JsonData, ReportName, true);
+                }
+        }); 
+      });
+          });
+
+          jQuery(document).ready(function(){
+         
+
+          $('#editlaunchplans').on('click',function(){  
+          jQuery('#upload-file').hide();     
+          jQuery('#download-file').toggle('show');
+          });
+
+
+          $('#addlaunchplans').on('click',function(){  
+          jQuery('#download-file').hide();     
+          jQuery('#upload-file').toggle('show');
+          });
+
+
+
+
+
+        });
+
+        //addlaunchplans
+        //upload-file
+   
         });
 
         $ (document).ready ( function(){
@@ -111,13 +274,48 @@
                 $('input:submit').attr('disabled',true);
             }
         });
-});   
+        });   
 
 
         $('#uploaded').on('click',function(){
           alert("Successfully Processed Your Launch Plan!");
         });
 
+
+        function Export_JSON_to_CSV(JSONString, ReportName, isShowHeader) {
+            var arrJsonData = typeof JSONString != 'object' ? JSON.parse(JSONString) : JSONString;
+            var CSV = '';
+            CSV += ReportName + '\r\n\n';
+            if (isShowHeader) {
+                var row = "";
+                for (var index in arrJsonData[0]) {
+                    row += index + ',';
+                }
+                row = row.slice(0, -1);
+                CSV += row + '\r\n';
+            }
+            for (var i = 0; i < arrJsonData.length; i++) {
+                var row = "";
+                for (var index in arrJsonData[i]) {
+                    row += '"' + arrJsonData[i][index] + '",';
+                }
+                row.slice(0, row.length - 1);
+                CSV += row + '\r\n';
+            }
+            if (CSV == '') {
+                alert("Invalid JsonData");
+                return;
+            }
+            fileName = ReportName.replace(/ /g, "_");
+            var uri = 'Data:text/csv;charset=utf-8,' + escape(CSV);
+            var link = document.createElement("a");
+            link.href = uri;
+            link.style = "visibility:hidden";
+            link.download = fileName + ".csv";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
         
       
         

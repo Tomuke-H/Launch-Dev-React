@@ -9,15 +9,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
     <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.5.1.js"></script>
     <title>Launch Planning</title>
-    <link rel='icon' type='image/x-icon' href='./images/favicon.ico' />
    <style>
    .form-control:valid{
       background-color: #FEFFFA;
    }  
-
+  
 
 
    </style> 
+   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="./templates/site.webmanifest">
   </head>
   
   
@@ -72,42 +75,61 @@
     <h1 style="text-align:center">Launch Profile Creation</h1>
     <br></br>
     <div class="text-center">
+    <button type="button" class="btn btn-primary" id="launchprofiletemplate">Download Launch Profile Template</button>
     <button type="button" class="btn btn-primary" id="create">Create Launch Profile</button>
     <button type="button" class="btn btn-primary" id="download">Download Launch Profiles CSV</button>
     <button type="button" class="btn btn-primary" id="upload">Upload Launch Profile CSV</button>
     </div>
    <div class="container-fluid" id="formdiv" style="display:none">
      <br></br>
-      <form class="form-control" id="LaunchProfileForm">
+      <form class="was-validated" id="LaunchProfileForm">
         <div class="row">
           <div class="col-md-4">
-            <label for="launchprofilenameid">Launch Profile Name</label>
-            <input type="text" class="form-control" placeholder="Name" aria-label="Name" id="launchprofilenameid" name='launchprofilenameid'>
+            <label for="launchnameid">Launch Profile Name</label>
+            <input type="text" class="form-control" placeholder="Name" aria-label="Name" id="launchprofilenameid" name='launchprofilenameid' required>
+            <div class="valid-feedback">
+              Looks good!
+            </div>
           </div>
         </div>
         <br></br>
         <div class="row">
           <div class="col-md-2">
             <label for="lobid">Line of Business</label>
-            <select class="form-control" id="lobid" name='lobid' aria-expanded="false">
+            <select class="form-select" required id="lobid" name='lobid' aria-expanded="false">
+                    <option value="">Required Value</option>
+                    <option value="CFPP SW">CFPP SW</option>
+                    <option value="CnE Devices">CnE Devices</option>
+                    <option value="Hololens">Hololens</option>
+                     <option value="IEB CTO">IEB CTO</option>
+                    <option value="Other">Other</option>
+                    <option value="Surface Accessories">Surface Accessories</option>
+                     <option value="Surface Devices">Surface Devices</option>
+                    <option value="SW FPP">SW FPP</option>
+                    <option value="Xbox Accessories">Xbox Accessories</option>
+                    <option value="Xbox Console">Xbox Console</option>
+                    <option value="Xbox One">Xbox One</option>
+
             </select>
+            <div class="invalid-feedback">
+              Pick an LOB
+            </div>
           </div>
           <div class="col-md-2">
             <label for="codenameid">Code Name</label>
-            <select class="form-control is-invalid" id="codenameid" name='codenameid' aria-expanded="false" required>
-            </select>
+            <input type="text" class="form-control" placeholder="Code Name" aria-label="Code Name" id="codenameid" name='codenameid' required>
               <div class="invalid-feedback">Please enter the Code Name</div>
           </div>
           <div class="col-md-2">
             <label for="skuprofileid">Existing SKU Profile</label>
-            <select class="form-control" id="skuprofileid" name='skuprofileid' aria-expanded="false">
+            <select class="form-select" required id="skuprofileid" name='skuprofileid' aria-expanded="false">
             </select>
           </div>
           <div class="col-md-6">
             <label for="descriptionid">Description</label>
             <div class="input-group">
-              <div class="input-group-prepend" id="descriptionid" name='descriptioneid'></div>
-              <textarea class="form-control" aria-label="Description" placeholder="Description" rows=2></textarea>
+              <div class="input-group-prepend"></div>
+              <textarea class="form-control" aria-label="Description" placeholder="Description" rows=2 id="descriptionid" name='descriptionid'>Provide a Description</textarea>
               </div>
             </div>
           </div>
@@ -115,81 +137,97 @@
           <div class="row">
             <div class="col-md-2">
               <label for="pompoddid">POM/POD</label>
-              <select type="text" class="form-control" placeholder="POM/POD" id="pompodid" name='pompoddid'>
-                <option selected="selected" value ="0"></option>
+              <select type="text" class="form-select" required placeholder="POM/POD" id="pompodid" name='pompoddid'>
+                <option value="">Required Value</option>
                       <option  value="POM">POM</option>
                       <option value="POD">POD</option>
               </select>
+              <div class="invalid-feedback">Select a Value</div>
             </div>
             <div class="col-md-2">
               <label for="launchdateid">Launch Date</label>
-              <input type="date" class="form-control is-invalid" placeholder="Launch Date" id="launchdateid" name='launchdateid' required>
+              <input type="date" class="form-control" placeholder="Launch Date" id="launchdateid" name='launchdateid' required>
               <div class="invalid-feedback">
-              Please enter a valid launch date.
+              Enter Valid Date.
               </div>
             </div>
             <div class="col-md-2">
               <label for="launchtypeid">Launch Type</label> 
-              <select type="text" id="launchtypeid"  placeholder="Launch Type" aria-label="Type"  class="form-control">
-               <option selected="selected" value ="-1">Select a Type</option>
-                    <option  value="GA">GA</option>
+              <select type="text" class="form-select" required placeholder="Launch Type" id="launchtypeid" name="launchtypeid">
+                <option value="">Required Value</option>
+                    <option value="GA">GA</option>
                     <option value="MSD">MSD</option>
                     <option value="FSD">FSD</option>
                 </select>
+                <div class="invalid-feedback">Select Launch Type</div>
               </div>
                 <div class="col-md-2">
                   <label for="regionid">Region(s)</label>
-                  <select multiple class="form-control" type="text" placeholder="Regions" aria-label="Regions" id='regionsid' name='regionsid'>
+                  <select multiple class="form-control" type="text" placeholder="Regions" aria-label="Regions" id='regionsid' name='regionsid' required>
                    <!--<option selected="selected" value ="-1"></option> !-->
-                   <option value="null">AOC</option>
-                    <option value="null">EOC</option>
-                    <option value="null">APOC</option>
-                    <option value="null">LOC</option>
+                   <option value="AOC">AOC</option>
+                    <option value="EOC">EOC</option>
+                    <option value="APOC">APOC</option>
+                    <option value="LOC">LOC</option>
                     </select>
+                    <div class="invalid-feedback">Select Region(s)</div>
                 </div>
                 <div class="col-md-2">
-                  <label for="annoucedateid">Annouce Date</label>
-                  <input type="date" class="form-control" placeholder="Annouce Date" id="annoucedateid" name='annoucedateid'>
+                  <label for="announcedateid">Announce Date</label>
+                  <input type="date" class="form-control" placeholder="Announce Date" id="announcedateid" name='announcedateid' required>
+                  <div class="invalid-feedback">Enter Valid Date</div>
               </div>
               <div class="col-md-2">
-                <label for="annoucedid">Annouced (Y/N)</label>
-                <select type="text" class="form-control" placeholder="Announced (Y/N)" id="annoucedid" name='annoucedid'>
-                  <option selected="selected" value ="0"></option>
-                        <option  value="Yes">Yes</option>
-                        <option value="No">No</option>
+                <label for="announcedid">Announced (Y/N)</label>
+                <select type="text" class="form-select" required placeholder="Announced (Y/N)" id="announcedid" name='announcedid'>
+                  <option value="">Required</option>
+                        <option  value="Y">Y</option>
+                        <option value="N">N</option>
                 </select>
+                <div class="invalid-feedback">Select Value</div>
               </div>
             </div>
         <br></br>
         <div class="row">
           <div class="col-md-2">
-            <label for="ipqregionid">IPQ Region(s)</label>
-            <select multiple class="form-control" type="text" placeholder="IPQ Regions" aria-label="IPQ Regions" id='ipqregionsid' name='ipqregionsid'>
-             <!--<option selected="selected" value ="-1"></option> !-->
-             <option value="null">AOC</option>
-              <option value="null">EOC</option>
-              <option value="null">APOC</option>
-              <option value="null">LOC</option>
-              </select>
+            <label for="aocipq">AOC IPQ</label>
+            <input type="number" class="form-control" placeholder="Qty." aria-label="aocipq" id=aocipq name='aocipq'>
           </div>
             <div class="col-md-2">
-              <label for="retaildcvolume">Retail DC Volume</label>
-              <input type="number" class="form-control" placeholder="Retail DTS Volume" aria-label="Retail DTS Volume" id=retaildcvolume name='retaildcvolume'>
+              <label for="eocipq">EOC IPQ</label>
+              <input type="number" class="form-control" placeholder="Qty." aria-label="eocipq" id=eocipq name='eocipq'>
             </div>
             <div class="col-md-2">
-            <label for="retaildtsvolume">Retail DTS Volume</label>
-            <input type="number" class="form-control" placeholder="Retail DTS Volume" aria-label="Retail DTS Volume" id=retaildtsvolume name='retaildtsvolume'>
+            <label for="apocipq">APOC IPQ</label>
+            <input type="number" class="form-control" placeholder="Qty." aria-label="apocipq" id=apocipq name='apocipq'>
           </div>
             <div class="col-md-2">
+            <label for="locipq">LOC IPQ</label>
+            <input type="number" class="form-control" placeholder="Qty." aria-label="locipq" id="locipq" name='locipq'>
+          </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-md-3">
+              <label for="dcvolume">DC Volume</label>
+              <input type="number" class="form-control" placeholder="DTS Volume" aria-label="DTS Volume" id=dcvolume name='dcvolume'>
+            </div>
+            <div class="col-md-3">
+            <label for="dtsvolume">DTS Volume</label>
+            <input type="number" class="form-control" placeholder="DTS Volume" aria-label="DTS Volume" id=dtsvolume name='dtsvolume'>
+          </div>
+            <div class="col-md-3">
             <label for="msstoreipq">MS Store IPQ</label>
             <input type="number" class="form-control" placeholder="MS Store IPQ" aria-label="MS Store IPQ" id="msstoreipq" name='msstoreipq'>
           </div>
-          <div class="col-md-4">
-          <label for="Description">Special Call Outs/ Notes</label>
+        </div>
+        <br>
+          <div class='row'>
+          <div class="col-md-6">
+          <label for="notesid">Special Call Outs/ Notes</label>
             <div class="input-group">
-              <div class="input-group-prepend" id="Description" name='Description'>
-              </div>
-              <textarea class="form-control" aria-label="Description" placeholder="Notes" rows=6></textarea>
+              <div class="input-group-prepend"></div>
+              <textarea class="form-control" aria-label="Notes" placeholder="Notes" rows=6 id="notesid" name='notesid'>Add Notes</textarea>
             </div>
           </div>
         </div>
@@ -208,6 +246,25 @@
           <input type="file" name="fileupload" id="fileToUpload">
           <input type="submit" value="Upload File" name="submit" id="uploaded">
         </form>
+      </div>
+      <div class="container-fluid" id="editdiv" style="display:none">
+        <form class="px-4 py-3" action="uploadfile" method="POST" id="upload-file" enctype="multipart/form-data">
+          <h4>Please Choose Launch Profile(s) to Download</h4>
+          <div class="col-md-3">
+            <form class="form-group" action="uploadfile" method="POST" id="upload-file" enctype="multipart/form-data">
+              <label for="launchprofilesDropdown"><b>Launch Profile</b></label>
+              <select class="form-control" id="sel_launchprofile" name="launchprofilesDropdown" aria-expanded="false"></select> 
+          </div>
+          <br>
+          <button type="button" class="btn btn-primary" id="downloadlaunchprofile">Download</button>
+          <form>
+
+
+
+          </form>
+          <!--<input type="file" name="fileupload" id="fileToUpload">
+          <input type="submit" value="Upload File" name="submit" id="uploaded">
+        </form> -->
       </div>
              <!-- 
           </div>
@@ -267,8 +324,9 @@
     
     <script type="text/javascript">
 
+    
       $(document).ready(function(){
-
+/*
         $.ajax({
             method: "GET",
             url: "launchskuattributes",
@@ -280,21 +338,21 @@
               }  
               $("#lobid").html(s);  
             }
-          });
-
+          });*/
+            
           $.ajax({
             method: "GET",
             url: "launchskuattributes",
             success: function(response){
             //console.log(response);
-            var s = '<option selected="selected" value ="0"></option>';
+            var s = '<option value="">Required Value</option>';
             for (var i=0; i <response.length;i++){
-              s += '<option value="' + response[i].BusinessUnitName + '">' + response[i].BusinessUnitName + '</option>';  
+              s += '<option value="' + response[i].Planningbusinessunit + '">' + response[i].Planningbusinessunit + '</option>';  
               }  
               $("#skuprofileid").html(s);  
             }
           });
-          
+          /*
           $.ajax({
             method: "GET",
             url: "launchskuattributes",
@@ -306,20 +364,64 @@
               }  
               $("#codenameid").html(s);  
             }
-          });
+          });*/
 
 
-        $('#download').on('click',function(){
+          
+
+        $('#downloadlaunchprofile').on('click',function(){
           alert("Downloaded CSV");
+          var title = 'LaunchProfile-'
+          var selectedvalue = $("#sel_launchprofile").find("option:selected").text();
           $.ajax({
                 type: "GET",
                 dataType:'json',
-                url: "launchprofiles",
+                url: "launchprofiles?launchprofileparameter="+selectedvalue,
                 success: function(response){
-                //console.log(response);
-                JsonData = response
-                ReportName = 'LaunchProfiles';
-                Export_JSON_to_CSV(JsonData, ReportName, true);
+              //console.log(response);
+                JsonData = response;
+                console.log(JsonData); //logging the wrong order need to fix here/
+                console.log(JsonData['0']);
+                //console.log(typeof JsonData);
+              //var i = 0;
+              //while(i++ < JsonData['length']){
+              //'LaunchProfileName': str(this.name)}]
+              //var TotalProjects = JsonData['length'];
+              //console.log(TotalProjects);
+              //console.log(JsonData['0']["MSStoreIPQ"]);
+              //var JsonData =[{
+              //'LaunchProfileName': str(this.name)}]
+              //var TotalProjects = JsonData['length'];
+              //console.log(TotalProjects);
+              var JsonData = [{
+              'LaunchProfileName': JsonData["0"]["LaunchProfileName"],
+              'LineOfBusiness': JsonData["0"]["LineOfBusiness"],
+              'CodeName': JsonData["0"]["CodeName"],
+              'ExistingSKUProfile': JsonData["0"]["ExistingSKUProfile"],
+              'Description':JsonData["0"]["Description"],
+              'POM/POD': JsonData["0"]["POM/POD"],
+              'LaunchDate': JsonData["0"]["LaunchDate"],
+              'LaunchType': JsonData["0"]["LaunchType"],
+              'Region(s)': JsonData["0"]["Region(s)"],
+              'AnnounceDate': JsonData["0"]["AnnounceDate"],
+              'Announced(Y/N)':JsonData["0"]["Announced(Y/N)"],
+              'AOCIPQ':JsonData["0"]["AOCIPQ"],
+              'EOCIPQ': JsonData["0"]["EOCIPQ"],
+              'APOCIPQ':JsonData["0"]["APOCIPQ"],
+              'LOCIPQ': JsonData["0"]["LOCIPQ"],
+              'DCVolume':JsonData["0"]["DCVolume"],
+              'DTSVolume':JsonData["0"]["DTSVolume"],
+              'MSStoreIPQ':JsonData["0"]["MSStoreIPQ"],
+              'Notes':JsonData["0"]["Notes"]
+              }];
+                
+                console.log(JsonData);
+                console.log(typeof JsonData);
+              
+              
+              ReportName = title.concat(selectedvalue);
+              JsonData.filter(d =>d.name === selectedvalue);
+              Export_JSON_to_CSV(JsonData, ReportName, true);
                 }
         });
       });
@@ -327,6 +429,16 @@
      // $('#launchtypeid').multiselect({		
 	//	nonSelectedText: 'Select Region(s)'				
 	 //   });
+
+
+/*
+   function JSONstringifyOrder( obj, space )
+{
+    var allKeys = [];
+    JSON.stringify( obj, function( key, value ){ allKeys.push( key ); return value; } )
+    allKeys.sort();
+    return JSON.stringify( obj, allKeys, space );
+}*/
       function Export_JSON_to_CSV(JSONString, ReportName, isShowHeader) {
             var arrJsonData = typeof JSONString != 'object' ? JSON.parse(JSONString) : JSONString;
             var CSV = '';
@@ -362,33 +474,87 @@
             document.body.removeChild(link);
         }
 
+        //Download Template
+        jQuery(document).ready(function(){
+          $('#launchprofiletemplate').on('click',function(){  
+            var data = [{
+            'LaunchProfileName': 'Sample Profile',
+            'LineOfBusiness': 'Surface Devices',
+            'CodeName': 'Project-Z',
+            'ExistingSKUProfile': 'Surface Studio',
+            'Description':'Sample Launch Profile',
+            'POM/POD': 'POM',
+            'LaunchDate': '4/20/2020',
+            'LaunchType': 'FSD',
+            'Region(s)': 'AOC;EOC;APOC;LOC;',
+            'AnnounceDate': '4/20/2020',
+            'Announced(Y/N)':'Y',
+            'AOCIPQ':'20',
+            'EOCIPQ':'20',
+            'APOCIPQ':'20',
+            'LOCIPQ':'20',
+            'DCVolume':'20',
+            'DTSVolume':'20',
+            'MSStoreIPQ':'20',
+            'Notes':'Sample Call Out'
+              }];
+          ReportName = 'LaunchProfile-Template';
+          Export_JSON_to_CSV(data, ReportName, true);
+        }); 
+        });
+
+
+        //Hide Modules for Launch Profile//
 
         jQuery(document).ready(function(){
-          $('#create').on('click',function(){  
-          jQuery('#uploaddiv').hide();     
+          $('#edit').on('click',function(){  
+          jQuery('#editdiv').hide();     
           jQuery('#formdiv').toggle('show');
           });
         });
 
         jQuery(document).ready(function(){
           $('#upload').on('click',function(){ 
-          jQuery('#formdiv').hide();      
+          jQuery('#formdiv').hide(); 
+          jQuery('#editdiv').hide();    
           jQuery('#uploaddiv').toggle('show');
           });
         });
 
-  
+        jQuery(document).ready(function(){
+          $('#create').on('click',function(){  
+          jQuery('#uploaddiv').hide();
+          jQuery('#editdiv').hide();      
+          jQuery('#formdiv').toggle('show');
+          });
+        });
 
+        jQuery(document).ready(function(){
+          $('#download').on('click',function(){ 
+          jQuery('#formdiv').hide(); 
+          jQuery('#uploaddiv').hide();        
+          jQuery('#editdiv').toggle('show');
+          });
+        });
 
-        //LaunchDictionary
+        //Not getting Notes, Desc, or Launch Type
+        //Post Launch Profile Data Via Web Form//
         launchprofile = {};
 
-        $("form").submit(function(event){
-          alert("Launch Profile Saved!");
+        $('#LaunchProfileForm').submit(function(event){
+          alert("Launch Profile Saved!"); 
           console.log($(this).serializeArray());
-          //console.log({launchprofile:$(this).serializeArray()})
-          data = $(this).serializeArray()
-          
+          data = $(this).serializeArray();
+          var regionstring = '';
+          data.forEach(mutlipleregions);
+          data.push({name: 'regionstring', value: regionstring});
+          function mutlipleregions(value){
+            if(value.value === "AOC" || value.value === "EOC" || value.value === "APOC" || value.value === "LOC"){
+              foundOne = value.value.concat(";");
+              regionstring += foundOne
+            }
+              return;
+          };
           $.ajax({
                 type: "POST",
                 dataType:'json',
@@ -402,6 +568,46 @@
           $('#LaunchProfileForm')[0].reset();
         });
 
+        //Populate DropDown for Launch Selection//
+        $.ajax({
+            method: "GET",
+            url: "launchparameters",
+            success: function(response){
+            //console.log(response);
+            var s = '<option selected="selected" value ="-1">Pick a Profile</option>';
+            for (var i=0; i <response.length;i++){
+              s += '<option value="' + response[i].LProfileId + '">' + response[i].LProfileName + '</option>';  
+              }  
+              $("#sel_launchprofile").html(s);  
+            }
+          });
+
+          $('#sel_launchprofile').change(function () {
+             var selectedText = $(this).find("option:selected").text();
+             console.log(selectedText)
+              });
+
+        //Upload Profile Data to Database//
+             $(document).ready ( function(){
+              $('input:submit').attr('disabled',true);
+              $('input:file').change(
+              function(){
+            if ($(this).val()){
+                $('input:submit').removeAttr('disabled'); 
+            }
+            else {
+                $('input:submit').attr('disabled',true);
+            }
+        });
+        });     
+
+        $('#uploaded').on('click',function(){
+          console.log('Shit was clicked!')
+          alert("Successfully Processed Your Launch Plan!");
+          
+        });
+
+        
 });
 
         //$("#launchprofilecreated").on('click',function(){
@@ -413,7 +619,7 @@
           //PQS = $('#pqsdateid').val() 
           //LaunchType =  $('#launchtypeid').val()
           //Region = $('#regionsid').val()
-          //AnnouceDate =  $('#annoucedateid').val()
+          //AnnounceDate =  $('#announcedateid').val()
           //IPQRegion = $('#ipqregionid').val()
           //RetailDTSVolume =  $('#retaildtsvolume').val()
           //Notes = $('#Description').val()

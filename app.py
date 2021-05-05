@@ -1,5 +1,6 @@
 import uuid
 import requests
+from IPython.display import display
 from flask import Flask, jsonify, request, render_template, session, url_for, redirect
 from flask_session import Session # https://pythonhosted.org/Flask-Session
 from flask_sqlalchemy import SQLAlchemy
@@ -136,45 +137,68 @@ def _getSQLToken():
     return token
 
 #APIS     
+#/launchprofiles/<string:name>/
+
+#Not getting Notes, Desc, or Launch Type
+
 
 @app.route('/launchprofiles', methods=['GET', 'POST'])
 def launchprofiles():
+    launchprofileparameter = request.args.get('launchprofileparameter')
+    #print(launchprofileparameter)
     #if not session.get("user"):
     #    return redirect(url_for("login"))
     if request.method == 'POST':
         data = request.form.to_dict()
         print(data)
         #df = pd.DataFrame.from_dict(data)
+        #return(print(region))
         conn = getSQLConnection(app_config=app_config)
         with conn.cursor() as cursor:
-            insert = text('INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles] VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?)')
-            LaunchName = data.get('launchnameid')
-            CodeName = data.get('codenameid')
+            insert = text('INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles] VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+            name  = data.get('launchprofilenameid')
             LOB = data.get('lobid')
+            codeName = data.get('codenameid')
+            existingSKUProfile = data.get('skuprofileid')
+            Description = data.get('descriptionid')
+            POMPOD = data.get('pompoddid')
             LaunchDate = data.get('launchdateid')
-            PQS = data.get('pqsdateid')
             LaunchType = data.get('launchtypeid')
-            Region = data.get('regionsid')
-            AnnouceDate = data.get('annoucedateid')
-            IPQRegion = data.get('ipqregionid')
-            RetailDTSVolume = data.get('retaildtsvolume')
-            Notes = data.get('pqsdateid')
+            Regions = data.get('regionstring')
+            AnnounceDate = data.get('announcedateid') #I have to fix the name here and in UI
+            AnnounceFlag = data.get('announcedid')
+            AOCIPQ = data.get('aocipq')
+            EOCIPQ = data.get('eocipq')
+            APOCIPQ = data.get('apocipq')
+            LOCIPQ = data.get('locipq')
+            DCVolume = data.get('dcvolume')
+            DTSVolume = data.get('dtsvolume')
+            MSStoreIPQ = data.get("msstoreipq")
+            Notes = data.get('notesid')
             ChangeDate = datetime.now()
-            UpdatedBy = 'chosbo@microsoft.com'
-            params =(LaunchName,CodeName,LOB,LaunchDate,PQS,LaunchType,Region,AnnouceDate,IPQRegion,RetailDTSVolume,Notes,ChangeDate,UpdatedBy)
+            Createdby = 'chosbo@microsoft.com'
+            params =(name,LOB,codeName,existingSKUProfile,Description,POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,Createdby)
             cursor.execute(str(insert),params)
             print("Entered")
-        return(print("Success"))
+        return 'Success'
 
     if request.method == 'GET':
         data = request.get_json()
         conn = getSQLConnection(app_config=app_config)
-        with conn.cursor() as cursor:
-            id = cursor.execute("SELECT DISTINCT * FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
+        with conn.cursor() as cursor: 
+            select = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ ,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
+            selectall = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles]')
+            params = (launchprofileparameter)
+            if launchprofileparameter == "All" :
+                id = cursor.execute(str(selectall))
+            else :
+                id = cursor.execute(str(select),params)
+            print(id)
             columns = [column[0] for column in id.description]
             print(columns)
             results = []
             for row in id.fetchall():
+                print(row)
                 results.append(dict(zip(columns, row)))
                 #print(row)
         return jsonify(results)
@@ -183,17 +207,25 @@ def launchprofiles():
 def launchplans():
     #if not session.get("user"):
     #    return redirect(url_for("login"))
-    if request.method == 'GET':
+     if request.method == 'GET':
         data = request.get_json()
         conn = getSQLConnection(app_config=app_config)
-        with conn.cursor() as cursor:
-            id = cursor.execute("SELECT DISTINCT * FROM [launchmodeldev].[dbo].[FactLaunchPlans]")
+        with conn.cursor() as cursor: 
+            select = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ ,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
+            selectall = text('SELECT DISTINCT Origin,Destination,Customer,Channel,Other,DateType,TargetDate,Qty,FulfillmentScenario,NodeModeOne,NodeModeTwo,NodeModeThree,NodeModeFour,NodeModeFive,NodeModeSix FROM [launchmodeldev].[dbo].[PROD_LAUNCHPLANTEMPLATES]')
+            #params = (launchprofileparameter)
+            #if launchprofileparameter == "All" :
+            id = cursor.execute(str(selectall))
+            #else :
+            #    id = cursor.execute(str(select),params)
+            print(id)
             columns = [column[0] for column in id.description]
             print(columns)
             results = []
             for row in id.fetchall():
+                print(row)
                 results.append(dict(zip(columns, row)))
-            print(jsonify(results))
+                #print(row)
         return jsonify(results)
 
 @app.route('/launchparameters', methods=['GET', 'POST'])
@@ -221,7 +253,7 @@ def launchskuattributes():
         data = request.get_json()
         conn = getSQLConnection(app_config=app_config)
         with conn.cursor() as cursor:
-            id = cursor.execute("SELECT DISTINCT * FROM [launchmodeldev].[dbo].[DimSKUAttributes]")
+            id = cursor.execute("SELECT DISTINCT Planningbusinessunit FROM [launchmodeldev].[dbo].[BU]")
             columns = [column[0] for column in id.description]
             print(columns)
             results = []
@@ -233,7 +265,193 @@ def launchskuattributes():
 
 
 
-'''          
+
+
+@app.route("/uploadlaunchplanfile", methods=['GET','POST'])
+def uploadlaunchplan():
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+    if request.method=="POST":
+        conn = getSQLConnection(app_config=app_config)
+        f = request.files['fileupload']
+        print(f) 
+        form = request.form
+        FileName = f.filename
+        ChangeDate = datetime.now()
+        versionparameter = str(FileName) + " - " + str(ChangeDate)
+        launchID = form.get('launchprofilesDropdown')
+        print(FileName, launchID)
+        for key in form.keys():
+            print(FileName,launchID)
+            for value in form.getlist(key):
+                print(key,":",value)
+        fstring = f.read()
+        id = uuid.uuid1()
+        text_obj = fstring.decode('UTF-8')
+        data = io.StringIO(text_obj)
+        df = pd.read_csv(data,sep=",")
+        df = df.iloc[2:]
+        print(df) 
+        df.columns=['Origin',"Destination", 
+        "Customer","Channel",
+        "Other","DateType",
+        "TargetDate","Qty",
+        "FulfillmentScenario",
+        "NodeModeOne","NodeModeTwo",
+        "NodeModeThree","NodeModeFour",
+        "NodeModeFive","NodeModeSix"] 
+        df["ChangeDate"] = ChangeDate
+        df["UpdatedBy"] = 'Chosbo@microsoft.com'
+        df["LaunchProfileId"] = launchID
+        df["LaunchPlanName"] = FileName
+        df["Version"] = str(FileName) + " - " + str(ChangeDate)
+        df = df.fillna(value='N/A')
+        print(df)
+        with conn.cursor() as cursor:
+            #id = cursor.execute("SELECT DISTINCT Name, LOB,CodeName,ExistingSKUProfile,Description,POMPOD,convert(varchar,LaunchDate,22) as LaunchDate,LaunchType,Regions,convert(varchar,AnnounceDate,22) as AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes,convert(varchar,ChangeDate,22) as ChangeDate, CreatedBy FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
+            #result = id.fetchall()
+            #pd.option_context('display.max_rows',None,'display.max_columns',None,'display.precision',3)
+            #df2 = list(result)
+            #df2 = pd.DataFrame.from_records(df2, columns = ['Name','LOB','CodeName','ExistingSKUProfile','Description','POMPOD','LaunchDate','LaunchType','Regions','AnnounceDate','AnnounceFlag','AOCIPQ','EOCIPQ','APOCIPQ','LOCIPQ','DCVolume','DTSVolume','MSStoreIPQ','Notes','ChangeDate','CreatedBy'])
+            #display(df2)
+            #deletetext = text("DELETE FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?")
+            inserttext = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchPlans](LaunchPlanId,LaunchProfileId,LaunchPlanName,ChangeDate,Version,UpdatedBy,Origin,Destination,Customer,Channel,Other,DateType,TargetDate,Qty,FulfillmentScenario,NodeModeOne,NodeModeTwo,NodeModeThree,NodeModeFour,NodeModeFive,NodeModeSix)VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            procedure = text("EXEC sp_Calculator @Version = ?")
+            #paramspro = 'poop2'
+            #cursor.execute(str(procedure),paramspro)
+            #df3 = pd.merge(df2,df,on='Name')
+            #display(df3)
+            #df3.to_csv(r'C:\Users\chosbo\Desktop\testdf.csv',index=False,header=True)
+            for row in df.itertuples():
+                print(row)
+                params =(row.LaunchProfileId,row.LaunchPlanName,row.ChangeDate,row.Version,row.UpdatedBy,row.Origin,row.Destination,row.Customer,row.Channel,row.Other,row.DateType,row.TargetDate,row.Qty,row.FulfillmentScenario,row.NodeModeOne,row.NodeModeTwo,row.NodeModeThree,row.NodeModeFour,row.NodeModeFive,row.NodeModeSix)
+                cursor.execute(str(inserttext),params)
+            cursor.execute(str(procedure),versionparameter)
+        cursor.close()
+
+
+            #result = ([dict(zip(i.keys(),i.values())) for i in id])
+            #df2 = pd.DataFrame(result)
+            #print(df2)
+            #columns = [column[0] for column in id.description]
+            #print(columns)
+            #results = []
+            #for row in id.fetchall():
+            #    results.append(dict(zip(columns, row)))
+            #    jsonobject = jsonify(results)
+            #print(jsonobject[0])
+        #insert = text("MERGE [launchmodeldev].[dbo].[FactLaunchProfiles] as mrg USING (SELECT :Id,:Name,:LOB,:CodeName,:ExistingSKUProfile,:Description,:POMPOD,:LaunchDate,:LaunchType,:Regions,:AnnounceDate,:AnnouceFlag,:AOCIPQ,:EOCIPQ,:APOCIPQ,:LOCIPQ,:DCVolume,:DTSVolume,:MSStoreIPQ,:Notes,:ChangeDate,:CreatedBy) as upload  ON mrg.Name = upload.Name WHEN MATCHED UPDATE SET msg.Name=upload.Name,msg.LOB=upload.LOB,msg.CodeName=upload.CodeName,msg.ExistingSKUProfile=upload.ExistingSKUProfile,msg.Description=upload.Description,msg.POMPOD=upload.POMPOD,msg.LaunchDate=upload.LaunchDate,msg.LaunchType=upload.LaunchType,msg.Regions=upload.Regions,msg.AnnounceDate=upload.AnnounceDate,msg.AnnouceFlag=upload.AnnouceFlag,msg.AOCIPQ=upload.AOCIPQ,msg.EOCIPQ=upload.EOCIPQ,msg.APOCIPQ=upload.APOCIPQ,msg.LOCIPQ=upload.LOCIPQ,msg.DCVolume=upload.DCVolume,msg.DTSVolume=upload.DTSVolume,msg.MSStoreIPQ=upload.MSStoreIPQ,msg.Notes=upload.Notes, msg.ChangeDate=upload.ChangeDate, msg.Createdby=upload.Createdby WHEN NOT MATCHED THEN INSERT(Id,Name,LOB,CodeName,ExistingSKUProfile,Description,POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnouceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy)VALUES(upload.ID,upload.Name,upload.LOB,upload.CodeName,upload.ExistingSKUProfile,upload.Description,upload.POMPOD,upload.LaunchDate,upload.LaunchType,upload.Regions,upload.AnnounceDate,upload.AnnouceFlag,upload.AOCIPQ,upload.EOCIPQ,upload.APOCIPQ,upload.LOCIPQ,upload.DCVolume,upload.DTSVolume,upload.MSStoreIPQ,upload.Notes,upload.ChangeDate,upload.CreatedBy)")
+        #with conn.cursor() as cursor:
+        #    for row in df.itertuples(): #iterrows():#itertuples()
+        #        print(row)
+        #        #params = (FileName,id,launchID,row.LaunchPlanName,str(datetime.now()),row.Version,row.UpdatedBy,row.Origin_Location,row.Destination_Country,row.Customer,row.Channel,row.Other,row.Date_Type,str(row.Target_Date),row.Qty,row.Fulfillment_Scenario,row.Model_Type,row.NodeModeOne,row.NodeModeTwo,row.NodeModeThree,row.NodeModeFour,row.NodeModeFive,row.NodeModeSix)
+        #        cursor.execute(insert,['sadfsdf'=Id,row.Name:Name,row.CodeName:CodeName,row.ExistingSKUProfile:ExistingSKUProfile,row.Description:Description,row.POMPOD:POMPOD,row.LaunchDate:LaunchDate,row.LaunchType:LaunchType,row.Regions:Regions,row.AnnounceDate:AnnounceDate,row.AnnouceFlag:AnnouceFlag,row.AOCIPQ:AOCIPQ,row.EOCIPQ:EOCIPQ,row.APOCIPQ:APOCIPQ,row.LOCIPQ:LOCIPQ,row.DCVolume:DCVolume,row.DTSVolume:DTSVolume,row.MSStoreIPQ:MSStoreIPQ,row.Notes:Notes,datetime.now():ChangeDate,"Chosbo":CreatedBy])
+        #cursor.close()
+        #print(df)
+    return render_template('launchplans.html')
+
+
+# HOT-FIX: Have to figure out how to add / preserve the ID of the table object being deleted and updated.
+@app.route("/uploadfile", methods=['GET','POST'])
+def uploadFiles():
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+    if request.method=="POST":
+        conn = getSQLConnection(app_config=app_config)
+        f = request.files['fileupload']
+        print('FUCK!')
+        print(f) 
+        form = request.form
+        FileName = f.filename
+        launchID = form.get('launchprofilesDropdown')
+        print(FileName, launchID)
+        for key in form.keys():
+            print(FileName,launchID)
+            for value in form.getlist(key):
+                print(key,":",value)
+        fstring = f.read()
+        id = uuid.uuid1()
+        text_obj = fstring.decode('UTF-8')
+        data = io.StringIO(text_obj)
+        df = pd.read_csv(data,sep=",")
+        df = df.iloc[2:]
+        #print(df) 
+        df.columns=['Name',"LOB",
+        "CodeName","ExistingSKUProfile",
+        "Description","POMPOD",
+        "LaunchDate","LaunchType",
+        "Regions","AnnounceDate",
+        "AnnounceFlag","AOCIPQ",
+        "EOCIPQ","APOCIPQ",
+        "LOCIPQ","DCVolume",
+        "DTSVolume","MSStoreIPQ",
+        "Notes"] 
+        df["ChangeDate"] = datetime.now()
+        df["CreatedBy"] = 'Chosbo@microsoft.com'
+        df = df.fillna(value='N/A')
+        print(df)
+        with conn.cursor() as cursor:
+            id = cursor.execute("SELECT DISTINCT Name, LOB,CodeName,ExistingSKUProfile,Description,POMPOD,convert(varchar,LaunchDate,22) as LaunchDate,LaunchType,Regions,convert(varchar,AnnounceDate,22) as AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes,convert(varchar,ChangeDate,22) as ChangeDate, CreatedBy FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
+            result = id.fetchall()
+            #pd.option_context('display.max_rows',None,'display.max_columns',None,'display.precision',3)
+            df2 = list(result)
+            df2 = pd.DataFrame.from_records(df2, columns = ['Name','LOB','CodeName','ExistingSKUProfile','Description','POMPOD','LaunchDate','LaunchType','Regions','AnnounceDate','AnnounceFlag','AOCIPQ','EOCIPQ','APOCIPQ','LOCIPQ','DCVolume','DTSVolume','MSStoreIPQ','Notes','ChangeDate','CreatedBy'])
+            #display(df2)
+            updatetext = text("UPDATE [launchmodeldev].[dbo].[FactLaunchProfiles] SET Name=?,LOB=?,CodeName=?,ExistingSKUProfile=?,Description=?,POMPOD=?,LaunchDate=?,LaunchType=?,Regions=?,AnnounceDate=?,AnnaounceFlag=?,AOCIPQ=?,EOCIPQ=?,APOCIPQ=?,LOCIPQ=?,DCVolume=?,DTSVolume=?,MSStoreIPQ=?,Notes=?,ChangeDate=?,CreatedBy=? where Name=?")
+            deletetext = text("DELETE FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?")
+            inserttext = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles](Id,Name,LOB,CodeName,ExistingSKUProfile,Description, POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy) VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            #df3 = pd.merge(df2,df,on='Name')
+            #display(df3)
+            #df3.to_csv(r'C:\Users\chosbo\Desktop\testdf.csv',index=False,header=True)
+            for row in df.itertuples():
+                print(row.Name)
+                params =(row.Name)
+                cursor.execute(str(deletetext),params)
+                params =(row.Name,row.LOB,row.CodeName,row.ExistingSKUProfile,row.Description,row.POMPOD,row.LaunchDate,row.LaunchType,row.Regions,row.AnnounceDate,row.AnnounceFlag,row.AOCIPQ,row.EOCIPQ,row.APOCIPQ,row.LOCIPQ,row.DCVolume,row.DTSVolume,row.MSStoreIPQ,row.Notes,row.ChangeDate,row.CreatedBy)
+                cursor.execute(str(inserttext),params)
+        cursor.close()
+
+
+            #result = ([dict(zip(i.keys(),i.values())) for i in id])
+            #df2 = pd.DataFrame(result)
+            #print(df2)
+            #columns = [column[0] for column in id.description]
+            #print(columns)
+            #results = []
+            #for row in id.fetchall():
+            #    results.append(dict(zip(columns, row)))
+            #    jsonobject = jsonify(results)
+            #print(jsonobject[0])
+        #insert = text("MERGE [launchmodeldev].[dbo].[FactLaunchProfiles] as mrg USING (SELECT :Id,:Name,:LOB,:CodeName,:ExistingSKUProfile,:Description,:POMPOD,:LaunchDate,:LaunchType,:Regions,:AnnounceDate,:AnnouceFlag,:AOCIPQ,:EOCIPQ,:APOCIPQ,:LOCIPQ,:DCVolume,:DTSVolume,:MSStoreIPQ,:Notes,:ChangeDate,:CreatedBy) as upload  ON mrg.Name = upload.Name WHEN MATCHED UPDATE SET msg.Name=upload.Name,msg.LOB=upload.LOB,msg.CodeName=upload.CodeName,msg.ExistingSKUProfile=upload.ExistingSKUProfile,msg.Description=upload.Description,msg.POMPOD=upload.POMPOD,msg.LaunchDate=upload.LaunchDate,msg.LaunchType=upload.LaunchType,msg.Regions=upload.Regions,msg.AnnounceDate=upload.AnnounceDate,msg.AnnouceFlag=upload.AnnouceFlag,msg.AOCIPQ=upload.AOCIPQ,msg.EOCIPQ=upload.EOCIPQ,msg.APOCIPQ=upload.APOCIPQ,msg.LOCIPQ=upload.LOCIPQ,msg.DCVolume=upload.DCVolume,msg.DTSVolume=upload.DTSVolume,msg.MSStoreIPQ=upload.MSStoreIPQ,msg.Notes=upload.Notes, msg.ChangeDate=upload.ChangeDate, msg.Createdby=upload.Createdby WHEN NOT MATCHED THEN INSERT(Id,Name,LOB,CodeName,ExistingSKUProfile,Description,POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnouceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy)VALUES(upload.ID,upload.Name,upload.LOB,upload.CodeName,upload.ExistingSKUProfile,upload.Description,upload.POMPOD,upload.LaunchDate,upload.LaunchType,upload.Regions,upload.AnnounceDate,upload.AnnouceFlag,upload.AOCIPQ,upload.EOCIPQ,upload.APOCIPQ,upload.LOCIPQ,upload.DCVolume,upload.DTSVolume,upload.MSStoreIPQ,upload.Notes,upload.ChangeDate,upload.CreatedBy)")
+        #with conn.cursor() as cursor:
+        #    for row in df.itertuples(): #iterrows():#itertuples()
+        #        print(row)
+        #        #params = (FileName,id,launchID,row.LaunchPlanName,str(datetime.now()),row.Version,row.UpdatedBy,row.Origin_Location,row.Destination_Country,row.Customer,row.Channel,row.Other,row.Date_Type,str(row.Target_Date),row.Qty,row.Fulfillment_Scenario,row.Model_Type,row.NodeModeOne,row.NodeModeTwo,row.NodeModeThree,row.NodeModeFour,row.NodeModeFive,row.NodeModeSix)
+        #        cursor.execute(insert,['sadfsdf'=Id,row.Name:Name,row.CodeName:CodeName,row.ExistingSKUProfile:ExistingSKUProfile,row.Description:Description,row.POMPOD:POMPOD,row.LaunchDate:LaunchDate,row.LaunchType:LaunchType,row.Regions:Regions,row.AnnounceDate:AnnounceDate,row.AnnouceFlag:AnnouceFlag,row.AOCIPQ:AOCIPQ,row.EOCIPQ:EOCIPQ,row.APOCIPQ:APOCIPQ,row.LOCIPQ:LOCIPQ,row.DCVolume:DCVolume,row.DTSVolume:DTSVolume,row.MSStoreIPQ:MSStoreIPQ,row.Notes:Notes,datetime.now():ChangeDate,"Chosbo":CreatedBy])
+        #cursor.close()
+        #print(df)
+    return 'OK'
+
+'''
+
+      
+@app.route('/uploadfile', methods=['POST'])
+def uploadFiles():
+    if request.method=="POST":
+        f = request.files['fileupload']
+        test = request.form['form-select']
+        print(test)
+        form = request.form
+        for key in form.keys():
+            for value in form.getlist(key):
+                print(key,":",value)
+        fstring = f.read()
+        text_obj = fstring.decode('UTF-8')
+        data = io.StringIO(text_obj)
+        df = pd.read_csv(data,sep=",")
+        #csv_dicts = [{k: v for k, v in row.items()} for row in csv.DictReader(fstring.splitlines(), skipinitialspace=True)]  
+        print(df)
+    return("Success") 
     @app.route('/launchprofiles',methods=['GET','POST'])
     def launchprofiles():
         if request.method == "GET":
@@ -247,7 +465,7 @@ def launchskuattributes():
         #for launch in launches:
         #   launch = {'LaunchName':launch['name']}
         #   mylist.append(launch)
-        # '''
+        # 
 
 
 launches = [
@@ -277,14 +495,14 @@ launches = [
 ]
 
 
-''''
+
 #Post, add a launch
 @app.route('/launchprofiles',methods=['POST'])
 def create_launch():
     request_data = request.get_json()
     #new_launch = {'launchName':request_data['data']}
     return request_data
-'''
+
 launches = [
     
     {'id': 12,
@@ -292,7 +510,7 @@ launches = [
     {'id': 13,
     'name':'FalconB'}
 ]
-'''
+
 @app.route('/launch/<string:name>/sku')
 def get_sku_in_launch(name):
     #if not session.get("user"):
@@ -309,7 +527,7 @@ def get_allLaunches():
         mylist.append(launch)
 
     return jsonify(mylist)
-'''
+
 
 
 
@@ -357,9 +575,9 @@ def uploadFiles():
                 cursor.execute(str(insert),params)    
         cursor.close()
         #print(df)
-    return redirect("launchplans")
+    return print("OK") #redirect("launchprofile")
 
-'''
+
 @app.route("/uploadfile", methods=['POST'])
 def uploadFiles():
     if request.method=="POST":
@@ -377,7 +595,7 @@ def uploadFiles():
         #csv_dicts = [{k: v for k, v in row.items()} for row in csv.DictReader(fstring.splitlines(), skipinitialspace=True)]  
         print(df)
     return("Success")
-'''
+
     
     #return render_template("templates/launchplans.html")
 
@@ -420,7 +638,7 @@ def get_sku_in_launch(name):
             return jsonify({'sku':launch['sku']})
     return jsonify({"message":"Sku Not Found"})
 
-
+'''
 app.jinja_env.globals.update(_build_auth_code_flow=_build_auth_code_flow)  # Used in template
 
 if __name__ == '__main__':
