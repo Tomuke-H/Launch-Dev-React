@@ -1,6 +1,6 @@
 import uuid
 import requests
-from IPython.display import display
+#from IPython.display import display
 from flask import Flask, jsonify, request, render_template, session, url_for, redirect
 from flask_session import Session # https://pythonhosted.org/Flask-Session
 from flask_sqlalchemy import SQLAlchemy
