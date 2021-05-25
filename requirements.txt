@@ -7,3 +7,8 @@ pyodbc
 pandas
 flask_sqlalchemy
 datetime
+xlrd
+flask_excel
+pyexcel_xls
+openpyxl
+

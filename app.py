@@ -1,7 +1,6 @@
 import uuid
 import requests
-
-from flask import Flask, jsonify, request, render_template, session, url_for, redirect
+from flask import Flask, jsonify, request, render_template, session, url_for, redirect, send_from_directory
 from flask_session import Session # https://pythonhosted.org/Flask-Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
@@ -13,15 +12,23 @@ import os
 from os.path import join, dirname, realpath
 import pandas as pd
 import io
+import xlrd  
+import flask_excel as excel
+from pyexcel_xls import get_data
 from sqlalchemy.sql.expression import insert
 from sql import getSQLConnection
 from datetime import date, datetime
+from xlrd  import xldate_as_tuple
+from openpyxl import load_workbook
+
+
+
 
 
 
 
 # when working local, set Local to True and copy app_config to app_config_local to put in values.  This will be in Git ignore and won't be pulled into source.  
-Local = False
+Local = True
 
 if Local is False:
     import app_config as app_config
@@ -155,7 +162,7 @@ def launchprofiles():
         #return(print(region))
         conn = getSQLConnection(app_config=app_config)
         with conn.cursor() as cursor:
-            insert = text('INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles] VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+            insert = text('INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles] VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
             name  = data.get('launchprofilenameid')
             LOB = data.get('lobid')
             codeName = data.get('codenameid')
@@ -171,23 +178,26 @@ def launchprofiles():
             EOCIPQ = data.get('eocipq')
             APOCIPQ = data.get('apocipq')
             LOCIPQ = data.get('locipq')
+            FCCDate = data.get('fccdateid')
             DCVolume = data.get('dcvolume')
             DTSVolume = data.get('dtsvolume')
             MSStoreIPQ = data.get("msstoreipq")
             Notes = data.get('notesid')
             ChangeDate = datetime.now()
             Createdby = 'chosbo@microsoft.com'
-            params =(name,LOB,codeName,existingSKUProfile,Description,POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,Createdby)
+            params =(name,LOB,codeName,existingSKUProfile,Description,POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,Createdby)
             cursor.execute(str(insert),params)
             print("Entered")
         return 'Success'
+        #redirect(url_for("launchprofile"))
+        #'Success' redirect(url_for("login")) return redirect(url_for("/LaunchPlans"))
 
     if request.method == 'GET':
         data = request.get_json()
         conn = getSQLConnection(app_config=app_config)
-        with conn.cursor() as cursor: 
-            select = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ ,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
-            selectall = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles]')
+        with conn.cursor() as cursor:  
+            select = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
+            selectall = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles]')
             params = (launchprofileparameter)
             if launchprofileparameter == "All" :
                 id = cursor.execute(str(selectall))
@@ -205,13 +215,23 @@ def launchprofiles():
 
 @app.route('/launchplanning', methods=['GET', 'POST'])
 def launchplans():
+    file_name = 'LaunchPlans-Template.xltx'
+    wb = load_workbook('./LaunchPlans-Template.xlsx')
+    wb.save(file_name, as_template=True)
+    return send_from_directory(file_name, as_attachment=True)
+
+
+
+
+    '''
     #if not session.get("user"):
     #    return redirect(url_for("login"))
      if request.method == 'GET':
         data = request.get_json()
-        conn = getSQLConnection(app_config=app_config)
+        conn = getSQLConnection(app_config=app_config) 
+        wb = Workbook
         with conn.cursor() as cursor: 
-            select = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ ,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
+            select = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
             selectall = text('SELECT DISTINCT Origin,Destination,Customer,Channel,Other,DateType,TargetDate,Qty,FulfillmentScenario,NodeModeOne,NodeModeTwo,NodeModeThree,NodeModeFour,NodeModeFive,NodeModeSix FROM [launchmodeldev].[dbo].[PROD_LAUNCHPLANTEMPLATES]')
             #params = (launchprofileparameter)
             #if launchprofileparameter == "All" :
@@ -226,7 +246,7 @@ def launchplans():
                 print(row)
                 results.append(dict(zip(columns, row)))
                 #print(row)
-        return jsonify(results)
+        return jsonify(results) '''
 
 @app.route('/launchparameters', methods=['GET', 'POST'])
 def launchparameters():
@@ -271,42 +291,65 @@ def launchskuattributes():
 def uploadlaunchplan():
     #if not session.get("user"):
     #    return redirect(url_for("login"))
+
     if request.method=="POST":
         conn = getSQLConnection(app_config=app_config)
         f = request.files['fileupload']
-        print(f) 
-        form = request.form
-        FileName = f.filename
-        ChangeDate = datetime.now()
-        versionparameter = str(FileName) + " - " + str(ChangeDate)
-        launchID = form.get('launchprofilesDropdown')
-        print(FileName, launchID)
-        for key in form.keys():
-            print(FileName,launchID)
-            for value in form.getlist(key):
-                print(key,":",value)
-        fstring = f.read()
-        id = uuid.uuid1()
-        text_obj = fstring.decode('UTF-8')
-        data = io.StringIO(text_obj)
-        df = pd.read_csv(data,sep=",")
-        df = df.iloc[2:]
-        print(df) 
-        df.columns=['Origin',"Destination", 
+        rows = []
+        wb = xlrd.open_workbook(file_contents=f.read())
+        sh = wb.sheet_by_index(0)
+        for rownum in range(3,sh.nrows):
+            rows.append(sh.row_values(rownum))
+        
+
+        launchplandf = pd.DataFrame (rows,columns=['Origin','Destination', 
         "Customer","Channel",
         "Other","DateType",
         "TargetDate","Qty",
         "FulfillmentScenario",
         "NodeModeOne","NodeModeTwo",
         "NodeModeThree","NodeModeFour",
-        "NodeModeFive","NodeModeSix"] 
-        df["ChangeDate"] = ChangeDate
-        df["UpdatedBy"] = 'Chosbo@microsoft.com'
-        df["LaunchProfileId"] = launchID
-        df["LaunchPlanName"] = FileName
-        df["Version"] = str(FileName) + " - " + str(ChangeDate)
-        df = df.fillna(value='N/A')
-        print(df)
+        "NodeModeFive","NodeModeSix"])
+        print(launchplandf)
+        # Open the workbook
+        rows = []
+        sh = wb.sheet_by_index(1)
+        for rownum in range(3,sh.nrows):  
+            actual = sh.cell_value(rownum, colx=0)
+            buildqty = date = sh.cell_value(rownum, colx=1)
+            date = datetime(*xldate_as_tuple(actual, sh.book.datemode))
+            rows.append([date,buildqty])
+
+
+        buildplandf = pd.DataFrame(rows,columns=['Date','BuildQty'])
+
+        print(buildplandf)
+
+        form = request.form
+        FileName = f.filename
+        ChangeDate = datetime.now()
+        versionparameter = str(FileName) + " - " + str(ChangeDate)
+        launchID = form.get('launchprofilesDropdown')
+        print(FileName, launchID)
+      
+        id = uuid.uuid1()
+
+        launchplandf["LaunchPlanId"] = id
+        launchplandf["ChangeDate"] = ChangeDate
+        launchplandf["UpdatedBy"] = 'Chosbo@microsoft.com'
+        launchplandf["LaunchProfileId"] = launchID
+        launchplandf["LaunchPlanName"] = FileName
+        launchplandf["Version"] = str(FileName) + " - " + str(ChangeDate)
+        launchplandf = launchplandf.fillna(value='N/A')
+
+        buildplandf["LaunchPlanId"] = id
+        buildplandf["ChangeDate"] = ChangeDate
+        buildplandf["UpdatedBy"] = 'Chosbo@microsoft.com'
+        buildplandf["LaunchPlanName"] = FileName
+        buildplandf["Version"] = str(FileName) + " - " + str(ChangeDate)
+        buildplandf = buildplandf.fillna(value='N/A')
+        
+        print(launchplandf)
         with conn.cursor() as cursor:
             #id = cursor.execute("SELECT DISTINCT Name, LOB,CodeName,ExistingSKUProfile,Description,POMPOD,convert(varchar,LaunchDate,22) as LaunchDate,LaunchType,Regions,convert(varchar,AnnounceDate,22) as AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes,convert(varchar,ChangeDate,22) as ChangeDate, CreatedBy FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
             #result = id.fetchall()
@@ -315,18 +358,24 @@ def uploadlaunchplan():
             #df2 = pd.DataFrame.from_records(df2, columns = ['Name','LOB','CodeName','ExistingSKUProfile','Description','POMPOD','LaunchDate','LaunchType','Regions','AnnounceDate','AnnounceFlag','AOCIPQ','EOCIPQ','APOCIPQ','LOCIPQ','DCVolume','DTSVolume','MSStoreIPQ','Notes','ChangeDate','CreatedBy'])
             #display(df2)
             #deletetext = text("DELETE FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?")
-            inserttext = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchPlans](LaunchPlanId,LaunchProfileId,LaunchPlanName,ChangeDate,Version,UpdatedBy,Origin,Destination,Customer,Channel,Other,DateType,TargetDate,Qty,FulfillmentScenario,NodeModeOne,NodeModeTwo,NodeModeThree,NodeModeFour,NodeModeFive,NodeModeSix)VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-            procedure = text("EXEC sp_Calculator @Version = ?")
+            inserttext = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchPlans](LaunchPlanId,LaunchProfileId,LaunchPlanName,ChangeDate,Version,UpdatedBy,Origin,Destination,Customer,Channel,Other,DateType,TargetDate,Qty,FulfillmentScenario,NodeModeOne,NodeModeTwo,NodeModeThree,NodeModeFour,NodeModeFive,NodeModeSix)VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            insertbuildplan = text("INSERT INTO [launchmodeldev].[dbo].[FactBuildPlans](LaunchPlanId,ChangeDate,Version,UpdatedBy,Date,BuildQty)VALUES(?,?,?,?,?,?)")
+            #procedure = text("EXEC sp_Calculator @Version = ?")
+            
             #paramspro = 'poop2'
             #cursor.execute(str(procedure),paramspro)
             #df3 = pd.merge(df2,df,on='Name')
             #display(df3)
             #df3.to_csv(r'C:\Users\chosbo\Desktop\testdf.csv',index=False,header=True)
-            for row in df.itertuples():
-                print(row)
-                params =(row.LaunchProfileId,row.LaunchPlanName,row.ChangeDate,row.Version,row.UpdatedBy,row.Origin,row.Destination,row.Customer,row.Channel,row.Other,row.DateType,row.TargetDate,row.Qty,row.FulfillmentScenario,row.NodeModeOne,row.NodeModeTwo,row.NodeModeThree,row.NodeModeFour,row.NodeModeFive,row.NodeModeSix)
+            for row in launchplandf.itertuples():
+                #print(row)
+                params =(row.LaunchPlanId,row.LaunchProfileId,row.LaunchPlanName,row.ChangeDate,row.Version,row.UpdatedBy,row.Origin,row.Destination,row.Customer,row.Channel,row.Other,row.DateType,row.TargetDate,row.Qty,row.FulfillmentScenario,row.NodeModeOne,row.NodeModeTwo,row.NodeModeThree,row.NodeModeFour,row.NodeModeFive,row.NodeModeSix)
                 cursor.execute(str(inserttext),params)
-            cursor.execute(str(procedure),versionparameter)
+            for row in buildplandf.itertuples():
+                #print(row)
+                params =(row.LaunchPlanId,row.ChangeDate,row.Version,row.UpdatedBy,row.Date,row.BuildQty)
+                cursor.execute(str(insertbuildplan),params)
+            #cursor.execute(str(procedure),versionparameter)
         cursor.close()
 
 
@@ -383,34 +432,48 @@ def uploadFiles():
         "Regions","AnnounceDate",
         "AnnounceFlag","AOCIPQ",
         "EOCIPQ","APOCIPQ",
-        "LOCIPQ","DCVolume",
+        "LOCIPQ","FCCDate","DCVolume",
         "DTSVolume","MSStoreIPQ",
         "Notes"] 
         df["ChangeDate"] = datetime.now()
         df["CreatedBy"] = 'Chosbo@microsoft.com'
         df = df.fillna(value='N/A')
-        print(df)
-        with conn.cursor() as cursor:
-            id = cursor.execute("SELECT DISTINCT Name, LOB,CodeName,ExistingSKUProfile,Description,POMPOD,convert(varchar,LaunchDate,22) as LaunchDate,LaunchType,Regions,convert(varchar,AnnounceDate,22) as AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes,convert(varchar,ChangeDate,22) as ChangeDate, CreatedBy FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
+        #print(df)
+
+        with conn.cursor() as cursor: 
+            id = cursor.execute("SELECT DISTINCT Id, Name, LOB,CodeName,ExistingSKUProfile,Description,POMPOD,convert(varchar,LaunchDate,22) as LaunchDate,LaunchType,Regions,convert(varchar,AnnounceDate,22) as AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,convert(varchar,ChangeDate,22) as ChangeDate, CreatedBy FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
             result = id.fetchall()
             #pd.option_context('display.max_rows',None,'display.max_columns',None,'display.precision',3)
             df2 = list(result)
-            df2 = pd.DataFrame.from_records(df2, columns = ['Name','LOB','CodeName','ExistingSKUProfile','Description','POMPOD','LaunchDate','LaunchType','Regions','AnnounceDate','AnnounceFlag','AOCIPQ','EOCIPQ','APOCIPQ','LOCIPQ','DCVolume','DTSVolume','MSStoreIPQ','Notes','ChangeDate','CreatedBy'])
+            df2 = pd.DataFrame.from_records(df2, columns = ['Id','Name','LOB','CodeName','ExistingSKUProfile','Description','POMPOD','LaunchDate','LaunchType','Regions','AnnounceDate','AnnounceFlag','AOCIPQ','EOCIPQ','APOCIPQ','LOCIPQ','FCCDate','DCVolume','DTSVolume','MSStoreIPQ','Notes','ChangeDate','CreatedBy'])
             #display(df2)
-            updatetext = text("UPDATE [launchmodeldev].[dbo].[FactLaunchProfiles] SET Name=?,LOB=?,CodeName=?,ExistingSKUProfile=?,Description=?,POMPOD=?,LaunchDate=?,LaunchType=?,Regions=?,AnnounceDate=?,AnnaounceFlag=?,AOCIPQ=?,EOCIPQ=?,APOCIPQ=?,LOCIPQ=?,DCVolume=?,DTSVolume=?,MSStoreIPQ=?,Notes=?,ChangeDate=?,CreatedBy=? where Name=?")
-            deletetext = text("DELETE FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?")
-            inserttext = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles](Id,Name,LOB,CodeName,ExistingSKUProfile,Description, POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy) VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-            #df3 = pd.merge(df2,df,on='Name')
-            #display(df3)
-            #df3.to_csv(r'C:\Users\chosbo\Desktop\testdf.csv',index=False,header=True)
-            for row in df.itertuples():
-                print(row.Name)
-                params =(row.Name)
-                cursor.execute(str(deletetext),params)
-                params =(row.Name,row.LOB,row.CodeName,row.ExistingSKUProfile,row.Description,row.POMPOD,row.LaunchDate,row.LaunchType,row.Regions,row.AnnounceDate,row.AnnounceFlag,row.AOCIPQ,row.EOCIPQ,row.APOCIPQ,row.LOCIPQ,row.DCVolume,row.DTSVolume,row.MSStoreIPQ,row.Notes,row.ChangeDate,row.CreatedBy)
-                cursor.execute(str(inserttext),params)
-        cursor.close()
-
+            df2 = pd.DataFrame.from_records(df2, columns = ['Id','Name'])
+            df = pd.merge(df,df2,on='Name',how='left')
+            df = df.fillna(value='N/A')
+            newdf = df.loc[(df.Id == 'N/A')]
+            df = df.loc[(df.Id != 'N/A')] #& (df.carrier == "B6")]
+            print(df.columns)
+            print(df)
+            print(newdf)
+            updatetext = text("UPDATE [launchmodeldev].[dbo].[FactLaunchProfiles] SET Name=?,LOB=?,CodeName=?,ExistingSKUProfile=?,Description=?,POMPOD=?,LaunchDate=?,LaunchType=?,Regions=?,AnnounceDate=?,AnnaounceFlag=?,AOCIPQ=?,EOCIPQ=?,APOCIPQ=?,LOCIPQ=?,FCCDate=?,DCVolume=?,DTSVolume=?,MSStoreIPQ=?,Notes=?,ChangeDate=?,CreatedBy=? where Name=?")
+            deletetext = text("DELETE FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE Id = ?")
+            inserttext = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles](Id,Name,LOB,CodeName,ExistingSKUProfile,Description, POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            newrecords = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles](Id,Name,LOB,CodeName,ExistingSKUProfile,Description, POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy) VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            
+            if df.empty == False:
+                for row in df.itertuples():
+                    print(row.Name)
+                    params = (row.Id)
+                    cursor.execute(str(deletetext),params)
+                    params = (row.Id,row.Name,row.LOB,row.CodeName,row.ExistingSKUProfile,row.Description,row.POMPOD,row.LaunchDate,row.LaunchType,row.Regions,row.AnnounceDate,row.AnnounceFlag,row.AOCIPQ,row.EOCIPQ,row.APOCIPQ,row.LOCIPQ,row.FCCDate,row.DCVolume,row.DTSVolume,row.MSStoreIPQ,row.Notes,row.ChangeDate,row.CreatedBy)
+                    cursor.execute(str(inserttext),params)
+            elif newdf.empty == False:
+                for row in newdf.itertuples():
+                    params = (row.Name,row.LOB,row.CodeName,row.ExistingSKUProfile,row.Description,row.POMPOD,row.LaunchDate,row.LaunchType,row.Regions,row.AnnounceDate,row.AnnounceFlag,row.AOCIPQ,row.EOCIPQ,row.APOCIPQ,row.LOCIPQ,row.FCCDate,row.DCVolume,row.DTSVolume,row.MSStoreIPQ,row.Notes,row.ChangeDate,row.CreatedBy)
+                    cursor.execute(str(newrecords),params)
+            else:
+                cursor.close()
+        return redirect(url_for('launches'))
 
             #result = ([dict(zip(i.keys(),i.values())) for i in id])
             #df2 = pd.DataFrame(result)
@@ -430,7 +493,7 @@ def uploadFiles():
         #        cursor.execute(insert,['sadfsdf'=Id,row.Name:Name,row.CodeName:CodeName,row.ExistingSKUProfile:ExistingSKUProfile,row.Description:Description,row.POMPOD:POMPOD,row.LaunchDate:LaunchDate,row.LaunchType:LaunchType,row.Regions:Regions,row.AnnounceDate:AnnounceDate,row.AnnouceFlag:AnnouceFlag,row.AOCIPQ:AOCIPQ,row.EOCIPQ:EOCIPQ,row.APOCIPQ:APOCIPQ,row.LOCIPQ:LOCIPQ,row.DCVolume:DCVolume,row.DTSVolume:DTSVolume,row.MSStoreIPQ:MSStoreIPQ,row.Notes:Notes,datetime.now():ChangeDate,"Chosbo":CreatedBy])
         #cursor.close()
         #print(df)
-    return 'OK'
+    
 
 '''
 

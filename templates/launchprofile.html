@@ -20,7 +20,7 @@
    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="./templates/site.webmanifest">
+<link rel="manifest" href="./templates/site.webmanifest"> 
   </head>
   
   
@@ -174,8 +174,7 @@
                 </div>
                 <div class="col-md-2">
                   <label for="announcedateid">Announce Date</label>
-                  <input type="date" class="form-control" placeholder="Announce Date" id="announcedateid" name='announcedateid' required>
-                  <div class="invalid-feedback">Enter Valid Date</div>
+                  <input type="date" class="form-control" placeholder="Announce Date" id="announcedateid" name='announcedateid'>
               </div>
               <div class="col-md-2">
                 <label for="announcedid">Announced (Y/N)</label>
@@ -189,21 +188,30 @@
             </div>
         <br></br>
         <div class="row">
+
           <div class="col-md-2">
             <label for="aocipq">AOC IPQ</label>
             <input type="number" class="form-control" placeholder="Qty." aria-label="aocipq" id=aocipq name='aocipq'>
           </div>
+
             <div class="col-md-2">
               <label for="eocipq">EOC IPQ</label>
               <input type="number" class="form-control" placeholder="Qty." aria-label="eocipq" id=eocipq name='eocipq'>
             </div>
+
             <div class="col-md-2">
             <label for="apocipq">APOC IPQ</label>
             <input type="number" class="form-control" placeholder="Qty." aria-label="apocipq" id=apocipq name='apocipq'>
-          </div>
+            </div>
+
             <div class="col-md-2">
             <label for="locipq">LOC IPQ</label>
             <input type="number" class="form-control" placeholder="Qty." aria-label="locipq" id="locipq" name='locipq'>
+            </div>
+    
+          <div class="col-md-2">
+          <label for="fccdateid">FCC Date</label>
+          <input type="date" class="form-control" placeholder="FCC Date" id="fccdateid" name='fccdateid'>
           </div>
         </div>
         <br>
@@ -248,6 +256,7 @@
         </form>
       </div>
       <div class="container-fluid" id="editdiv" style="display:none">
+       
         <form class="px-4 py-3" action="uploadfile" method="POST" id="upload-file" enctype="multipart/form-data">
           <h4>Please Choose Launch Profile(s) to Download</h4>
           <div class="col-md-3">
@@ -326,6 +335,8 @@
 
     
       $(document).ready(function(){
+
+
 /*
         $.ajax({
             method: "GET",
@@ -406,21 +417,21 @@
               'AnnounceDate': JsonData["0"]["AnnounceDate"],
               'Announced(Y/N)':JsonData["0"]["Announced(Y/N)"],
               'AOCIPQ':JsonData["0"]["AOCIPQ"],
-              'EOCIPQ': JsonData["0"]["EOCIPQ"],
+              'EOCIPQ': JsonData["0"]["EOCIPQ"], 
               'APOCIPQ':JsonData["0"]["APOCIPQ"],
               'LOCIPQ': JsonData["0"]["LOCIPQ"],
+              'FCCDate': JsonData["0"]["FCCDate"],
               'DCVolume':JsonData["0"]["DCVolume"],
               'DTSVolume':JsonData["0"]["DTSVolume"],
               'MSStoreIPQ':JsonData["0"]["MSStoreIPQ"],
               'Notes':JsonData["0"]["Notes"]
               }];
                 
-                console.log(JsonData);
-                console.log(typeof JsonData);
-              
+                //console.log(JsonData);
+                //console.log(typeof JsonData);
               
               ReportName = title.concat(selectedvalue);
-              JsonData.filter(d =>d.name === selectedvalue);
+              //JsonData.filter(d =>d.name === selectedvalue);
               Export_JSON_to_CSV(JsonData, ReportName, true);
                 }
         });
@@ -443,6 +454,8 @@
             var arrJsonData = typeof JSONString != 'object' ? JSON.parse(JSONString) : JSONString;
             var CSV = '';
             CSV += ReportName + '\r\n\n';
+            //CSV += ReportName + '\r\n\n';
+            CSV +='Required'+','+'Required'+','+'Required'+','+'Required'+','+''+','+'Required'+','+'Required'+','+'Required'+','+'Required'+','+''+','+'Required'+'\r\n';
             if (isShowHeader) {
                 var row = "";
                 for (var index in arrJsonData[0]) {
@@ -492,7 +505,8 @@
             'AOCIPQ':'20',
             'EOCIPQ':'20',
             'APOCIPQ':'20',
-            'LOCIPQ':'20',
+            'LOCIPQ':'20', 
+            'FCCDate':'4/20/2020',
             'DCVolume':'20',
             'DTSVolume':'20',
             'MSStoreIPQ':'20',
@@ -504,6 +518,7 @@
         });
 
 
+    
         //Hide Modules for Launch Profile//
 
         jQuery(document).ready(function(){
@@ -542,7 +557,7 @@
         launchprofile = {};
 
         $('#LaunchProfileForm').submit(function(event){
-          alert("Launch Profile Saved!"); 
+          //alert("Launch Profile Saved!"); 
           console.log($(this).serializeArray());
           data = $(this).serializeArray();
           var regionstring = '';
@@ -561,6 +576,7 @@
                 data: data,
                 url: "launchprofiles",
                 success: function(msg){
+                    alert("Launch Profile Saved!"); 
                     $('.answer').html(msg);
                   }
                 });
@@ -599,13 +615,14 @@
                 $('input:submit').attr('disabled',true);
             }
         });
-        });     
+        });    
+        
 
         $('#uploaded').on('click',function(){
           console.log('Shit was clicked!')
           alert("Successfully Processed Your Launch Plan!");
-          
-        });
+          });
+      
 
         
 });
