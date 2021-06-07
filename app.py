@@ -29,7 +29,7 @@ from openpyxl.writer.excel import save_virtual_workbook
 
 
 # when working local, set Local to True and copy app_config to app_config_local to put in values.  This will be in Git ignore and won't be pulled into source.  
-Local = True
+Local = False
 
 if Local is False:
     import app_config as app_config
