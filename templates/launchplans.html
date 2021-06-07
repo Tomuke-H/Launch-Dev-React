@@ -67,8 +67,8 @@
     <div class="container-fluid" style="align-self: center;">
       
     <p style="text-align:center">The select a launch profile to assign your uploaded launch plan to. After uploading your Launch Plan template click "Upload File" and we will generate your automated ship and build plan.</p>
-    <div class="text-center">
-      <button type="button" id="downloadlaunchplantemplate" class="btn btn-primary"style="align-content: center;">Download Launch Plan Template</button>
+    <div class="text-center"> 
+      <button type="button" class="btn btn-primary"style="align-content: center;"value="Download Excel File" onclick="DownloadTemplates('LaunchPlan-Template.xlsx')">Download Launch Plan Template</button>
       <button type="button" id="editlaunchplans" class="btn btn-primary"style="align-content: center;">Download Previous Launch Plans</button>
       <button type="button" id="addlaunchplans" class="btn btn-primary"style="align-content: center;">Add a New Launch Plan</button>
     </div>
@@ -83,22 +83,20 @@
   <input type="submit" value="Upload File" name="submit" id="uploaded">
 </form>
 
+ 
+
 <!--Download HTML-->
 
-<form class="px-4 py-3" action="uploadfile" method="POST" id="download-file" enctype="multipart/form-data" style="align-content: center;">
-<div class="col-md-3">
- <label for="launchplanDropdown"><b>Launch Plan</b></label>
-<select class="form-control" id="sel_launchplan" name="launchplanDropdown" aria-expanded="false">
- </select>
-</div>
-<div class="col-md-3">
- <label for="launchplanversionDropdown"><b>Launch Plan Version</b></label>
- <select class="form-control" id="sel_launchplanversion" name="launchplanversionDropdown" aria-expanded="false">
-  </select>
-  <br>
-</div>
-  <button type="button" id="downloadlaunchplans" class="btn btn-primary"style="align-content: center;">Download Selected Launch Plans</button>
-</form>
+ <form class="px-4 py-3" action="uploadfile" method="POST" id="download-file" enctype="multipart/form-data"style="align-content: center;">
+          <h4>Please Choose Launch Profile(s) to Download</h4>
+          <div class="col-md-3">
+            <form class="form-group" id="upload-file" enctype="multipart/form-data">
+              <label for="launchplanDropdown"><b>Launch Plan</b></label>
+              <select class="form-control" id="sel_launchplan" name="launchplanDropdown" aria-expanded="false"></select> 
+          </div>
+          <br>
+          <button type="button" class="btn btn-primary" id="downloadlaunchplan">Download</button>
+          <form>
 
 
 </div>
@@ -111,66 +109,185 @@
   
     <script type="text/javascript">
 
+    function DownloadTemplates(fileName) {
+            //Set the File URL.
+            var url = "Files/" + fileName;
+ 
+            $.ajax({
+                url: "launchplantemplate",
+                cache: false,
+                xhr: function () {
+                    var xhr = new XMLHttpRequest();
+                    xhr.onreadystatechange = function () {
+                        //console.log(xhr.responseType);
+                        //console.log(xhr.status);
+                        if (xhr.readyState == 2) {
+                            if (xhr.status == 200) {
+                                xhr.responseType = "blob";
+                            } else {
+                                xhr.responseType = "text";
+                            }
+                        }
+                    };
+                    return xhr;
+                },
+                success: function (data) {
+                    //Convert the Byte Data to BLOB object.
+                    console.log(data);
+                    var blob = new Blob([data], { type: "application/octetstream" });
+ 
+                    //Check the Browser type and download the File.
+                    var isIE = false || !!document.documentMode;
+                    if (isIE) {
+                        window.navigator.msSaveBlob(blob, fileName);
+                    } else {
+                        var url = window.URL || window.webkitURL;
+                        link = url.createObjectURL(blob);
+                        var a = $("<a />");
+                        a.attr("download", fileName);
+                        a.attr("href", link);
+                        $("body").append(a);
+                        a[0].click();
+                        $("body").remove(a);
+                    }
+                }
+            });
+        };
+
+
+
       $(document).ready(function (){
        
-     var beer = $.ajax({
-    method: "GET",
-    url: "launchparameters",
-    async: false,
-    dataType: 'json'
-}).responseJSON;
-
-    console.log(beer);
-
-      //Populate DropDown for Launch Selection//
+      //Populate Drop Down for Launch Profile Selection//
       $.ajax({
             method: "GET",
             url: "launchparameters",
             success: function(response){
             //console.log(response);
-            var s = '<option selected="selected" value ="-1">All</option>';
+            var s //= '<option selected="selected" value ="0"></option>';
             for (var i=0; i <response.length;i++){
               s += '<option value="' + response[i].LProfileId + '">' + response[i].LProfileName + '</option>';  
               }  
               $("#sel_launchprofile").html(s);  
             }
           });
+      //Populate DropDown for Launch Plan Selection
+           $.ajax({
+            method: "GET",
+            url: "launchplandropdown",
+            success: function(response){
+            console.log(response);
+            console.log(response.LAUNCHPLANNAME);
+            console.log("Shit");
+            var s //= '<option selected="selected" value ="0"></option>';
+            for (var i=0; i <response.length;i++){
+              s += '<option value="' + response[i].LAUNCHPLANNAME + '">' + response[i].LAUNCHPLANNAME + '</option>';  
+              }  
+              $("#sel_launchplan").html(s);  
+            }
+          });
      
+          //Setting Values//
           $('#sel_launchprofile').change(function () {
              var selectedText = $(this).find("option:selected").text();
              console.log(selectedText)
              var selectedvalue = $("#sel_launchprofile").find("option:selected").text();
               });
 
+          $('#sel_launchplan').change(function () {
+             var selectedText = $(this).find("option:selected").text();
+             console.log(selectedText)
+             var selectedvalue = $("#sel_launchplan").find("option:selected").text();
+              });
+
+
+          $('#downloadlaunchplan').on('click',function(){
+          alert("Downloading Launch Plan");
+          var title = 'LaunchPlan-'
+          var selectedvalue = $("#sel_launchplan").find("option:selected").text();
+          console.log(selectedvalue);
+          //console.log(selectedvalue)
+          $.ajax({
+                type: "GET",
+                //dataType:'json',
+                url: "launchplandownloadfile?launchplanparameter="+selectedvalue,
+                cache: false,
+                xhr: function () {
+                    var xhr = new XMLHttpRequest();
+                    xhr.onreadystatechange = function () {
+                        //console.log(xhr.responseType);
+                        //console.log(xhr.status);
+                        if (xhr.readyState == 2) {
+                            if (xhr.status == 200) {
+                                xhr.responseType = "blob";
+                            } else {
+                                xhr.responseType = "text";
+                            }
+                        }
+                    };
+                    return xhr;
+                },
+                success: function (data) {
+                    //Convert the Byte Data to BLOB object.
+                    fileName = selectedvalue + " - Launch Plan.xlsx"
+                    console.log(data);
+                    var blob = new Blob([data], { type: "application/octetstream" });
+ 
+                    //Check the Browser type and download the File.
+                    var isIE = false || !!document.documentMode;
+                    if (isIE) {
+                        window.navigator.msSaveBlob(blob, fileName);
+                    } else {
+                        var url = window.URL || window.webkitURL;
+                        link = url.createObjectURL(blob);
+                        var a = $("<a />");
+                        a.attr("download", fileName);
+                        a.attr("href", link);
+                        $("body").append(a);
+                        a[0].click();
+                        $("body").remove(a);
+                    }
+                }
+            });
+                
+        });
+
+
+
+
+
+          /*
           //Downloading//
 
               $.ajax({
             method: "GET",
-            url: "launchparameters",
+            url: "launchplandropdown",
             success: function(response){
             //console.log(response);
-            var s = '<option selected="selected" value ="-1">All</option>';
+            var s = '<option selected="selected" value ="-1">Pick a Launch Profile</option>';
             for (var i=0; i <response.length;i++){
-              s += '<option value="' + response[i].LProfileId + '">' + response[i].LProfileName + '</option>';  
+              s += '<option value="' + response[i].LaunchPlanName + '">' + response[i].LaunchPlanName + '</option>';  
               }  
               $("#sel_launchplan_download").html(s);  
             }
           });
+
+        
 
           //Profile Dropdown Variable Assignment//
           $('#sel_launchplan_download').change(function () {
              var selectedText = $(this).find("option:selected").text();
              console.log(selectedText)
              var planSelectedValue = $("#sel_launchplan_download").find("option:selected").text();
-              });
+              });*/
 
-          
+          /*
           $.ajax({
             method: "GET",
             url: "launchparameters",
             success: function(response){
             console.log(response);
-            var s = '<option selected="selected" value ="-1">All</option>';
+            var s = '<option selected="selected" value ="-1">Pick a Profile</option>';
             for (var i=0; i <response.length;i++){
               console.log(response[i].LProfileName);
               if(response[i].LProfileName){
@@ -181,26 +298,13 @@
 
           
 
-          $.ajax({
-            method: "GET",
-            url: "launchparameters",
-            success: function(response){
-            //console.log(response);
-            var s = '<option selected="selected" value ="-1">All</option>';
-            for (var i=0; i <response.length;i++){
-              s += '<option value="' + response[i].LPlanVersion + '">' + response[i].LPlanVersion + '</option>';  
-              }  
-              $("#sel_launchplanversion").html(s);  
-            }
-          });
-
 
           $('#sel_launchplan_download').change(function () {
              var selectedText = $(this).find("option:selected").text();
              console.log(selectedText)
-              });
+              });*/
 
-
+/*
           jQuery(document).ready(function(){
             $('#downloadlaunchplantemplate').on('click',function(){
               console.log("Button was Hit")
@@ -210,8 +314,10 @@
                 dataType:'json',
                 url: "launchplanning",
                 success: function(response){
-              //console.log(response);
-                JsonData = response;
+                  console.log(response);
+                  console.log("Nothing but successful?");
+                  return response;*/
+            //JsonData = response;
                 //console.log(JsonData); logging the wrong order need to fix here/
           //end
           /*var data = [{
@@ -232,12 +338,18 @@
             'NodeModeFive': '',
             'NodeModeSix': ''
               }];*/
-            ReportName = 'LaunchPlans-Template';
-            Export_JSON_to_CSV(JsonData, ReportName, true);
-                }
-        }); 
-      });
-          });
+            //ReportName = 'LaunchPlans-Template';
+            //Export_JSON_to_CSV(JsonData, ReportName, true);
+
+
+
+        
+
+
+
+
+                
+      
 
           jQuery(document).ready(function(){
          
@@ -278,10 +390,10 @@
         });   
 
 
-        $('#uploaded').on('click',function(){
-          alert("Successfully Processed Your Launch Plan!");
-        });
-
+        //$('#uploaded').on('click',function(){
+        //  alert("Successfully Processed Your Launch Plan!");
+        //});
+      
 
         function Export_JSON_to_CSV(JSONString, ReportName, isShowHeader) {
             var arrJsonData = typeof JSONString != 'object' ? JSON.parse(JSONString) : JSONString;

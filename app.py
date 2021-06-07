@@ -1,6 +1,6 @@
 import uuid
 import requests
-from flask import Flask, jsonify, request, render_template, session, url_for, redirect, send_from_directory
+from flask import Flask, jsonify, request, render_template, session, url_for, redirect, send_from_directory, make_response, Response
 from flask_session import Session # https://pythonhosted.org/Flask-Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
@@ -19,7 +19,8 @@ from sqlalchemy.sql.expression import insert
 from sql import getSQLConnection
 from datetime import date, datetime
 from xlrd  import xldate_as_tuple
-from openpyxl import load_workbook
+from openpyxl import load_workbook, Workbook
+from openpyxl.writer.excel import save_virtual_workbook
 
 
 
@@ -28,7 +29,7 @@ from openpyxl import load_workbook
 
 
 # when working local, set Local to True and copy app_config to app_config_local to put in values.  This will be in Git ignore and won't be pulled into source.  
-Local = False
+Local = True
 
 if Local is False:
     import app_config as app_config
@@ -191,39 +192,150 @@ def launchprofiles():
         return 'Success'
         #redirect(url_for("launchprofile"))
         #'Success' redirect(url_for("login")) return redirect(url_for("/LaunchPlans"))
-
-    if request.method == 'GET':
+        #     
+    if request.method == "GET":
         data = request.get_json()
         conn = getSQLConnection(app_config=app_config)
-        with conn.cursor() as cursor:  
-            select = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
+        results = []
+        wb = Workbook()
+        my_sheet = wb.active
+        #wb.title = "Launch-Profile-Template"
+        print(launchprofileparameter)
+        print("Workbook Created")
+        if launchprofileparameter == "All" :
+            wb.title = "All-Launch Profile(s)"
+        else :
+            wb.title = launchprofileparameter + "- Launch Profile(s)"
+        print(wb.title)
+        #my_sheet = wb.create_sheet("Sheet_A")
+        #my_sheet.title = "Launch-Profile-Template"
+        #ws2 = wb.create_sheet("Sheet_B", 0)
+        #ws2.title = "Title_B"
+
+        my_sheet['A1'].value = "Launch-Profile-Template"
+        my_sheet['A3'].value = "Required"
+        my_sheet['B3'].value = "Required"
+        my_sheet['C3'].value = "Required"
+        my_sheet['D3'].value = "Required"
+        my_sheet['F3'].value = "Required"
+        my_sheet['G3'].value = "Required"
+        my_sheet['H3'].value = "Required"
+        my_sheet['I3'].value = "Required"
+        my_sheet['K3'].value = "Required"
+        my_sheet['A4'].value = "LaunchProfileName"
+        my_sheet['B4'].value = "LineOfBusiness"
+        my_sheet['C4'].value = "CodeName"
+        my_sheet['D4'].value = "ExistingSKUProfile"
+        my_sheet['E4'].value = "Description"
+        my_sheet['F4'].value = "POM/POD"
+        my_sheet['G4'].value = "LaunchDate"
+        my_sheet['H4'].value = "LaunchType"
+        my_sheet['I4'].value = "Region(s)"
+        my_sheet['J4'].value = "AnnounceDate"
+        my_sheet['K4'].value = "Announced(Y/N)"
+        my_sheet['L4'].value = "AOCIPQ"
+        my_sheet['M4'].value = "EOCIPQ"
+        my_sheet['N4'].value = "APOCIPQ"
+        my_sheet['O4'].value = "LOCIPQ"
+        my_sheet['P4'].value = "FCCDate"
+        my_sheet['Q4'].value = "FCCDate"
+        my_sheet['R4'].value = "DCVolume"
+        my_sheet['S4'].value = "MSStoreIPQ"
+        my_sheet['T4'].value = "Notes"
+        #my_sheet.title = "LaunchProfileTemplate"
+
+        with conn.cursor() as cursor:
             selectall = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles]')
+            selectone = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
             params = (launchprofileparameter)
             if launchprofileparameter == "All" :
                 id = cursor.execute(str(selectall))
             else :
-                id = cursor.execute(str(select),params)
-            print(id)
-            columns = [column[0] for column in id.description]
-            print(columns)
-            results = []
+                id = cursor.execute(str(selectone),params)
             for row in id.fetchall():
+                row = list(row)
                 print(row)
-                results.append(dict(zip(columns, row)))
-                #print(row)
-        return jsonify(results)
+                my_sheet.append(row) 
+    print("YES 200!")
+    print(wb.sheetnames)
+    return Response(save_virtual_workbook(wb),headers={'Content-Disposition': 'attatchment;','Content-type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
 
 @app.route('/launchplanning', methods=['GET', 'POST'])
 def launchplans():
-    file_name = 'LaunchPlans-Template.xltx'
-    wb = load_workbook('./LaunchPlans-Template.xlsx')
-    wb.save(file_name, as_template=True)
-    return send_from_directory(file_name, as_attachment=True)
+    launchplanparameter= request.args.get('launchplanparameter')
+    print(launchplanparameter)
 
+    if request.method=="GET":
+        data = request.get_json()
+        conn = getSQLConnection(app_config=app_config)
+        results = []
+        wb = Workbook()
+        my_sheet = wb.active
+        wb.title = "Launch-Profile-Template"
+        
+        #my_sheet = wb.create_sheet("Sheet_A")
+        #my_sheet.title = "Launch-Profile-Template"
+        #ws2 = wb.create_sheet("Sheet_B", 0)
+        #ws2.title = "Title_B"
+
+        my_sheet['A1'].value = "Launch-Profile-Template"
+        my_sheet['A3'].value = "Required"
+        my_sheet['B3'].value = "Required"
+        my_sheet['C3'].value = "Required"
+        my_sheet['D3'].value = "Required"
+        my_sheet['F3'].value = "Required"
+        my_sheet['G3'].value = "Required"
+        my_sheet['H3'].value = "Required"
+        my_sheet['I3'].value = "Required"
+        my_sheet['K3'].value = "Required"
+        my_sheet['A4'].value = "LaunchProfileName"
+        my_sheet['B4'].value = "LineOfBusiness"
+        my_sheet['C4'].value = "CodeName"
+        my_sheet['D4'].value = "ExistingSKUProfile"
+        my_sheet['E4'].value = "Description"
+        my_sheet['F4'].value = "POM/POD"
+        my_sheet['G4'].value = "LaunchDate"
+        my_sheet['H4'].value = "LaunchType"
+        my_sheet['I4'].value = "Region(s)"
+        my_sheet['J4'].value = "AnnounceDate"
+        my_sheet['K4'].value = "Announced(Y/N)"
+        my_sheet['L4'].value = "AOCIPQ"
+        my_sheet['M4'].value = "EOCIPQ"
+        my_sheet['N4'].value = "APOCIPQ"
+        my_sheet['O4'].value = "LOCIPQ"
+        my_sheet['P4'].value = "FCCDate"
+        my_sheet['Q4'].value = "FCCDate"
+        my_sheet['R4'].value = "DCVolume"
+        my_sheet['S4'].value = "MSStoreIPQ"
+        my_sheet['T4'].value = "Notes"
+        my_sheet.title = "LaunchProfileTemplate"
+
+        with conn.cursor() as cursor:
+            selectall = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles]')
+            selectone = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
+            id = cursor.execute(str(selectall))
+            #if launchplanparameter == "All" :
+            #    id = cursor.execute(str(selectall))
+            #else :
+            #    id = cursor.execute(str(selectone),params)
+            for row in id.fetchall():
+                row = list(row)
+                print(row)
+                my_sheet.append(row)
+    print("YES 200!")
+    print(wb.sheetnames)
+    return Response(save_virtual_workbook(wb),headers={'Content-Disposition': 'attatchment;','Content-type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+#filename=sheet.xlsx
 
 
 
     '''
+
+     row = row + 1
+            for i, row in enumerate(results[0]):
+                my_sheet.cell(row=i, column=1).value = row
+
     #if not session.get("user"):
     #    return redirect(url_for("login"))
      if request.method == 'GET':
@@ -284,7 +396,366 @@ def launchskuattributes():
 
 
 
+#Downloads
+@app.route("/launchplandownloadfile", methods=['GET','POST'])
+def launchplandownloadfile():
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+    launchplanparameter = request.args.get('launchplanparameter')
+    print("API HIT")
+    print(launchplanparameter)
+    if request.method =='GET':
+        data = request.get_json()
+        conn = getSQLConnection(app_config=app_config)
+        wb = Workbook()
+        my_sheet = wb.active
+        my_sheet2 = wb.create_sheet("Build Plan", 1)
+        my_sheet.title = "Launch Plan"
 
+        my_sheet['A1'].value = "Launch-Plan"
+        my_sheet['A3'].value = "Required"
+        my_sheet['B3'].value = "Required"
+        my_sheet['C3'].value = "Required"
+        my_sheet['D3'].value = "Required"
+        my_sheet['F3'].value = "Required"
+        my_sheet['G3'].value = "Required"
+        my_sheet['H3'].value = "Required"
+        my_sheet['I3'].value = "Required"
+        my_sheet['K3'].value = "Required"
+        my_sheet['L3'].value = "Required"
+        my_sheet['M3'].value = "Required"
+        my_sheet['N3'].value = "Required"
+        my_sheet['O3'].value = "Required"
+        my_sheet['P3'].value = "Required"
+        my_sheet['A4'].value = "Origin"
+        my_sheet['B4'].value = "Destination"
+        my_sheet['C4'].value = "Customer"
+        my_sheet['D4'].value = "Channel"
+        my_sheet['E4'].value = "Other"
+        my_sheet['F4'].value = "DateType"
+        my_sheet['G4'].value = "TargetDate"
+        my_sheet['H4'].value = "Qty"
+        my_sheet['I4'].value = "FulfillmentScenario"
+        my_sheet['J4'].value = "NodeModeOne"
+        my_sheet['K4'].value = "NodeModeTwo"
+        my_sheet['L4'].value = "NodeModeThree"
+        my_sheet['M4'].value = "NodeModeFour"
+        my_sheet['N4'].value = "NodeModeFive"
+        my_sheet['O4'].value = "NodeModeSix"
+
+        my_sheet2['A1'].value = "Build-Plan"
+        my_sheet2['A3'].value = "Not Required"
+        my_sheet2['B3'].value = "Not Required"
+        my_sheet2['A4'].value = "Date"
+        my_sheet2['B4'].value = "BuildQty"
+        
+        with conn.cursor() as cursor:
+            selectlaunchplan = text('SELECT TOP 1 Origin, Destination,Customer,Channel,Other,DateType,CONVERT(varchar,TargetDate,101) as TargetDate,Qty, FulfillmentScenario,NodeModeOne,NodeModeTwo,NodeModeThree, NodeModeFour, NodeModeFive, NodeModeSix from [launchmodeldev].[dbo].[FactLaunchPlans] where LAUNCHPLANNAME = ? ORDER BY ChangeDate DESC')
+            selectbuildplan = text('SELECT DISTINCT CAST(BPL.Date as date) as [Date],BPL.BuildQty FROM (SELECT TOP 1 [Version] from [launchmodeldev].[dbo].[FactLaunchPlans] WHERE LAUNCHPLANNAME = ? ORDER BY ChangeDate DESC ) AS FLP LEFT JOIN [dbo].[FactBuildPlans] AS BPL on FLP.[Version]=BPL.[Version]') 
+            params = launchplanparameter
+            launchplanid = cursor.execute(str(selectlaunchplan),params)
+            for row in launchplanid.fetchall():
+                row = list(row)
+                print(row)
+                my_sheet.append(row) 
+            buildplanid = cursor.execute(str(selectbuildplan),params)
+            for row in buildplanid.fetchall():
+                row = list(row)
+                print(row)
+                my_sheet2.append(row)
+    return Response(save_virtual_workbook(wb),headers={'Content-Disposition': 'attatchment;','Content-type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+
+@app.route("/launchprofiledownloadfile", methods=['GET','POST'])
+def launchprofiledownloadfile():
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+
+    launchprofileparameter = request.args.get('launchprofileparameter')
+
+    if request.method == "GET":
+        data = request.get_json()
+        conn = getSQLConnection(app_config=app_config)
+        results = []
+        wb = Workbook()
+        my_sheet = wb.active
+        #wb.title = "Launch-Profile-Template"
+        print(launchprofileparameter)
+        print("Workbook Created")
+        if launchprofileparameter == "All" :
+            wb.title = "All-Launch Profiles"
+            my_sheet.title = "All-Launch Profiles"
+        else :
+            wb.title = launchprofileparameter + "- Launch Profile"
+            my_sheet.title = launchprofileparameter 
+        print(wb.title)
+     
+        my_sheet['A1'].value = "Launch-Profile-Template"
+        my_sheet['A3'].value = "Required"
+        my_sheet['B3'].value = "Required"
+        my_sheet['C3'].value = "Required"
+        my_sheet['D3'].value = "Required"
+        my_sheet['F3'].value = "Required"
+        my_sheet['G3'].value = "Required"
+        my_sheet['H3'].value = "Required"
+        my_sheet['I3'].value = "Required"
+        my_sheet['K3'].value = "Required"
+        my_sheet['A4'].value = "LaunchProfileName"
+        my_sheet['B4'].value = "LineOfBusiness"
+        my_sheet['C4'].value = "CodeName"
+        my_sheet['D4'].value = "ExistingSKUProfile"
+        my_sheet['E4'].value = "Description"
+        my_sheet['F4'].value = "POM/POD"
+        my_sheet['G4'].value = "LaunchDate"
+        my_sheet['H4'].value = "LaunchType"
+        my_sheet['I4'].value = "Region(s)"
+        my_sheet['J4'].value = "AnnounceDate"
+        my_sheet['K4'].value = "Announced(Y/N)"
+        my_sheet['L4'].value = "AOCIPQ"
+        my_sheet['M4'].value = "EOCIPQ"
+        my_sheet['N4'].value = "APOCIPQ"
+        my_sheet['O4'].value = "LOCIPQ"
+        my_sheet['P4'].value = "FCCDate"
+        my_sheet['Q4'].value = "FCCDate"
+        my_sheet['R4'].value = "DCVolume"
+        my_sheet['S4'].value = "MSStoreIPQ"
+        my_sheet['T4'].value = "Notes"
+        
+        with conn.cursor() as cursor:
+            selectall = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles]')
+            selectone = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
+            params = (launchprofileparameter)
+            if launchprofileparameter == "All" :
+                id = cursor.execute(str(selectall))
+            else :
+                id = cursor.execute(str(selectone),params)
+            for row in id.fetchall():
+                row = list(row)
+                print(row)
+                my_sheet.append(row) 
+    print("YES 200!")
+    print(wb.sheetnames)
+    return Response(save_virtual_workbook(wb),headers={'Content-Disposition': 'attatchment;','Content-type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+
+
+    if request.method=="POST":
+        conn = getSQLConnection(app_config=app_config)
+        f = request.files['fileupload']
+        #print('FUCK!')
+        #print(f) 
+        form = request.form
+        FileName = f.filename
+        launchID = form.get('launchprofilesDropdown')
+        print(FileName, launchID)
+        
+
+        
+        return redirect(url_for('launches'))
+
+
+@app.route("/launchplandropdown", methods=['GET','POST'])
+def launchplandropdown():
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+    if request.method == 'GET':
+        data = request.get_json()
+        conn = getSQLConnection(app_config=app_config)
+        with conn.cursor() as cursor:
+            id = cursor.execute("SELECT DISTINCT LAUNCHPLANNAME FROM [launchmodeldev].[dbo].[FactLaunchPlans]")
+            columns = [column[0] for column in id.description]
+            print(columns)
+            results = []
+            for row in id.fetchall():
+                results.append(dict(zip(columns, row)))
+            print(jsonify(results))
+        return jsonify(results)
+
+
+
+
+
+
+#Templates
+
+@app.route('/launchplantemplate', methods=['GET', 'POST'])
+def launchplantemplate():
+    #if not session.get("user"):
+    #return redirect(url_for("login"))
+    if request.method == 'GET':
+        wb = Workbook()
+        my_sheet =  wb.active
+        my_sheet2 = wb.create_sheet("Build Plan - Template", 1)
+        my_sheet.title = "Launch Plan - Template"
+        my_sheet['A1'].value = "Launch-Plan-Template"
+        my_sheet['A3'].value = "Required"
+        my_sheet['B3'].value = "Required"
+        my_sheet['C3'].value = "Required"
+        my_sheet['D3'].value = "Required"
+        my_sheet['F3'].value = "Required"
+        my_sheet['G3'].value = "Required"
+        my_sheet['H3'].value = "Required"
+        my_sheet['I3'].value = "Required"
+        my_sheet['K3'].value = "Required"
+        my_sheet['L3'].value = "Required"
+        my_sheet['M3'].value = "Required"
+        my_sheet['N3'].value = "Required"
+        my_sheet['O3'].value = "Required"
+        my_sheet['P3'].value = "Required"
+        my_sheet['A4'].value = "Origin"
+        my_sheet['B4'].value = "Destination"
+        my_sheet['C4'].value = "Customer"
+        my_sheet['D4'].value = "Channel"
+        my_sheet['E4'].value = "Other"
+        my_sheet['F4'].value = "DateType"
+        my_sheet['G4'].value = "TargetDate"
+        my_sheet['H4'].value = "Qty"
+        my_sheet['I4'].value = "FulfillmentScenario"
+        my_sheet['J4'].value = "NodeModeOne"
+        my_sheet['K4'].value = "NodeModeTwo"
+        my_sheet['L4'].value = "NodeModeThree"
+        my_sheet['M4'].value = "NodeModeFour"
+        my_sheet['N4'].value = "NodeModeFive"
+        my_sheet['O4'].value = "NodeModeSix"
+
+        my_sheet2['A1'].value = "Build-Plan-Template"
+        my_sheet2['A3'].value = "Not Required"
+        my_sheet2['B3'].value = "Not Required"
+        my_sheet2['A4'].value = "Date"
+        my_sheet2['B4'].value = "BuildQty"
+     
+    return Response(save_virtual_workbook(wb),headers={'Content-Disposition': 'attatchment;','Content-type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+  
+@app.route('/launchprofiletemplate', methods=['GET', 'POST'])
+def launchprofiletemplate():
+    #if not session.get("user"):
+    #return redirect(url_for("login"))
+    if request.method == 'GET':
+        wb = Workbook()
+        my_sheet = wb.active
+        wb.title = "Launch-Profile-Template"
+        my_sheet['A1'].value = "Launch-Profile-Template"
+        my_sheet['A3'].value = "Required"
+        my_sheet['B3'].value = "Required"
+        my_sheet['C3'].value = "Required"
+        my_sheet['D3'].value = "Required"
+        my_sheet['F3'].value = "Required"
+        my_sheet['G3'].value = "Required"
+        my_sheet['H3'].value = "Required"
+        my_sheet['I3'].value = "Required"
+        my_sheet['K3'].value = "Required"
+        my_sheet['A4'].value = "LaunchProfileName"
+        my_sheet['B4'].value = "LineOfBusiness"
+        my_sheet['C4'].value = "CodeName"
+        my_sheet['D4'].value = "ExistingSKUProfile"
+        my_sheet['E4'].value = "Description"
+        my_sheet['F4'].value = "POM/POD"
+        my_sheet['G4'].value = "LaunchDate"
+        my_sheet['H4'].value = "LaunchType"
+        my_sheet['I4'].value = "Region(s)"
+        my_sheet['J4'].value = "AnnounceDate"
+        my_sheet['K4'].value = "Announced(Y/N)"
+        my_sheet['L4'].value = "AOCIPQ"
+        my_sheet['M4'].value = "EOCIPQ"
+        my_sheet['N4'].value = "APOCIPQ"
+        my_sheet['O4'].value = "LOCIPQ"
+        my_sheet['P4'].value = "FCCDate"
+        my_sheet['Q4'].value = "DTSVolume"
+        my_sheet['R4'].value = "DCVolume"
+        my_sheet['S4'].value = "MSStoreIPQ"
+        my_sheet['T4'].value = "Notes"
+        my_sheet.title = "LaunchProfileTemplate"
+        row = ['SampleLaunchProfile', 'Surface Devices', 'ProjectX', 'Surface Studio', 'Description', 'POM', '05/14/2021', 'MSD', 'AOC;EOC;APOC;', '05/20/2021', 'Y', 12, 12, 12, 12, '05/20/2021', 12, 12, 12, 'Notes']
+        my_sheet.append(row)
+        print("YES 200!")
+        print(wb.sheetnames)
+    return Response(save_virtual_workbook(wb),headers={'Content-Disposition': 'attatchment;','Content-type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+
+
+#Uploads
+
+@app.route("/uploadlaunchprofilefile", methods=['GET','POST'])
+def uploadlaunchprofile():
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+    if request.method=="POST":
+        conn = getSQLConnection(app_config=app_config)
+        f = request.files['fileupload']
+        rows = []
+        wb = xlrd.open_workbook(file_contents=f.read())
+        sh = wb.sheet_by_index(0)
+
+        for rownum in range(4,sh.nrows):
+            currentrow = list(sh.row_values(rownum))
+            LaunchDate = sh.cell_value(rownum, colx=6)
+            AnnounceDate = sh.cell_value(rownum, colx=9)
+            FCCDate = sh.cell_value(rownum, colx=15)
+            print(LaunchDate)
+            print(AnnounceDate)
+            print(FCCDate)
+            print(currentrow)
+            #LaunchDate = str(datetime(*xldate_as_tuple(LaunchDate, sh.book.datemode)))
+            #AnnounceDate = str(datetime(*xldate_as_tuple(AnnounceDate, sh.book.datemode)))
+            #FCCDate = str(datetime(*xldate_as_tuple(FCCDate, sh.book.datemode)))
+            #print(LaunchDate)
+            #print(AnnounceDate)
+            #print(FCCDate)
+            #currentrow.append(FCCDate,LaunchDate,AnnounceDate)
+            print(currentrow)
+            rows.append(currentrow)
+            
+        print(rows)
+        launchprofiledf = pd.DataFrame (rows)
+        print(launchprofiledf)
+        launchprofiledf.columns = ['Name',"LOB",
+        "CodeName","ExistingSKUProfile",
+        "Description","POMPOD",
+        "LaunchDate","LaunchType",
+        "Regions","AnnounceDate",
+        "AnnounceFlag","AOCIPQ",
+        "EOCIPQ","APOCIPQ",
+        "LOCIPQ","FCCDate","DCVolume",
+        "DTSVolume","MSStoreIPQ",
+        "Notes"]
+        launchprofiledf["ChangeDate"] = datetime.now()
+        launchprofiledf["CreatedBy"] = 'Chosbo@microsoft.com'
+        launchprofiledf = launchprofiledf.fillna(value='N/A')
+
+        with conn.cursor() as cursor: 
+            id = cursor.execute("SELECT DISTINCT Id, Name, LOB,CodeName,ExistingSKUProfile,Description,POMPOD,convert(varchar,LaunchDate,22) as LaunchDate,LaunchType,Regions,convert(varchar,AnnounceDate,22) as AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,convert(varchar,ChangeDate,22) as ChangeDate, CreatedBy FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
+            result = id.fetchall()
+            #pd.option_context('display.max_rows',None,'display.max_columns',None,'display.precision',3)
+            df2 = list(result)
+            df2 = pd.DataFrame.from_records(df2, columns = ['Id','Name','LOB','CodeName','ExistingSKUProfile','Description','POMPOD','LaunchDate','LaunchType','Regions','AnnounceDate','AnnounceFlag','AOCIPQ','EOCIPQ','APOCIPQ','LOCIPQ','FCCDate','DCVolume','DTSVolume','MSStoreIPQ','Notes','ChangeDate','CreatedBy'])
+            #display(df2)
+            df2 = pd.DataFrame.from_records(df2, columns = ['Id','Name'])
+            df = pd.merge(launchprofiledf,df2,on='Name',how='left')
+            df = df.fillna(value='N/A')
+            newdf = df.loc[(df.Id == 'N/A')] #All New Profiles
+            df = df.loc[(df.Id != 'N/A')] #All Existing Profiles
+            print(df.columns)
+            print(df)
+            print(newdf)
+            #updatetext = text("UPDATE [launchmodeldev].[dbo].[FactLaunchProfiles] SET Name=?,LOB=?,CodeName=?,ExistingSKUProfile=?,Description=?,POMPOD=?,LaunchDate=?,LaunchType=?,Regions=?,AnnounceDate=?,AnnaounceFlag=?,AOCIPQ=?,EOCIPQ=?,APOCIPQ=?,LOCIPQ=?,FCCDate=?,DCVolume=?,DTSVolume=?,MSStoreIPQ=?,Notes=?,ChangeDate=?,CreatedBy=? where Name=?")
+            deletetext = text("DELETE FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE Id = ?")
+            inserttext = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles](Id,Name,LOB,CodeName,ExistingSKUProfile,Description, POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            newrecords = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles](Id,Name,LOB,CodeName,ExistingSKUProfile,Description, POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy) VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            
+            if df.empty == False:
+                for row in df.itertuples():
+                    print(row.Name)
+                    params = (row.Id)
+                    cursor.execute(str(deletetext),params)
+                    params = (row.Id,row.Name,row.LOB,row.CodeName,row.ExistingSKUProfile,row.Description,row.POMPOD,row.LaunchDate,row.LaunchType,row.Regions,row.AnnounceDate,row.AnnounceFlag,row.AOCIPQ,row.EOCIPQ,row.APOCIPQ,row.LOCIPQ,row.FCCDate,row.DCVolume,row.DTSVolume,row.MSStoreIPQ,row.Notes,row.ChangeDate,row.CreatedBy)
+                    cursor.execute(str(inserttext),params)
+            if newdf.empty == False:
+                for row in newdf.itertuples():
+                    params = (row.Name,row.LOB,row.CodeName,row.ExistingSKUProfile,row.Description,row.POMPOD,row.LaunchDate,row.LaunchType,row.Regions,row.AnnounceDate,row.AnnounceFlag,row.AOCIPQ,row.EOCIPQ,row.APOCIPQ,row.LOCIPQ,row.FCCDate,row.DCVolume,row.DTSVolume,row.MSStoreIPQ,row.Notes,row.ChangeDate,row.CreatedBy)
+                    cursor.execute(str(newrecords),params)
+            else:
+                cursor.close()
+        return redirect(url_for('launches'))
 
 
 @app.route("/uploadlaunchplanfile", methods=['GET','POST'])
@@ -298,25 +769,41 @@ def uploadlaunchplan():
         rows = []
         wb = xlrd.open_workbook(file_contents=f.read())
         sh = wb.sheet_by_index(0)
-        for rownum in range(3,sh.nrows):
-            rows.append(sh.row_values(rownum))
-        
+        for rownum in range(4,sh.nrows):
+            currentrow = list(sh.row_values(rownum))
+            actual = sh.cell_value(rownum, colx=6)
+            date = str(datetime(*xldate_as_tuple(actual, sh.book.datemode)))
+            currentrow.append(date)
+            rows.append(currentrow)
+            
+        print(rows)
+        launchplandf = pd.DataFrame (rows)
+        print(launchplandf)
+        launchplandf.columns = ['Origin','Destination', 
+        "Customer","Channel",
+        "Other","DateType","BadDate","Qty",
+        "FulfillmentScenario",
+        "NodeModeOne","NodeModeTwo",
+        "NodeModeThree","NodeModeFour",
+        "NodeModeFive","NodeModeSix","TargetDate"]
 
-        launchplandf = pd.DataFrame (rows,columns=['Origin','Destination', 
+        launchplandf = launchplandf[['Origin','Destination', 
         "Customer","Channel",
         "Other","DateType",
         "TargetDate","Qty",
         "FulfillmentScenario",
         "NodeModeOne","NodeModeTwo",
         "NodeModeThree","NodeModeFour",
-        "NodeModeFive","NodeModeSix"])
+        "NodeModeFive","NodeModeSix"]]
+
+
         print(launchplandf)
         # Open the workbook
         rows = []
         sh = wb.sheet_by_index(1)
-        for rownum in range(3,sh.nrows):  
+        for rownum in range(4,sh.nrows):  
             actual = sh.cell_value(rownum, colx=0)
-            buildqty = date = sh.cell_value(rownum, colx=1)
+            buildqty = sh.cell_value(rownum, colx=1)
             date = datetime(*xldate_as_tuple(actual, sh.book.datemode))
             rows.append([date,buildqty])
 
@@ -408,11 +895,10 @@ def uploadFiles():
     if request.method=="POST":
         conn = getSQLConnection(app_config=app_config)
         f = request.files['fileupload']
-        print('FUCK!')
-        print(f) 
         form = request.form
         FileName = f.filename
         launchID = form.get('launchprofilesDropdown')
+        id = uuid.uuid1()
         print(FileName, launchID)
         for key in form.keys():
             print(FileName,launchID)
