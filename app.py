@@ -29,7 +29,7 @@ from openpyxl.writer.excel import save_virtual_workbook
 
 
 # when working local, set Local to True and copy app_config to app_config_local to put in values.  This will be in Git ignore and won't be pulled into source.  
-Local = False
+Local = True
 
 if Local is False:
     import app_config as app_config
@@ -601,7 +601,6 @@ def launchplantemplate():
         my_sheet['M3'].value = "Required"
         my_sheet['N3'].value = "Required"
         my_sheet['O3'].value = "Required"
-        my_sheet['P3'].value = "Required"
         my_sheet['A4'].value = "Origin"
         my_sheet['B4'].value = "Destination"
         my_sheet['C4'].value = "Customer"
