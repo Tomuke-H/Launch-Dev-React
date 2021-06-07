@@ -675,7 +675,7 @@ def launchprofiletemplate():
 #Uploads
 
 @app.route("/uploadlaunchprofilefile", methods=['GET','POST'])
-def uploadlaunchprofile():
+def uploadlaunchprofilefile():
     #if not session.get("user"):
     #    return redirect(url_for("login"))
     if request.method=="POST":
@@ -752,8 +752,7 @@ def uploadlaunchprofile():
                 for row in newdf.itertuples():
                     params = (row.Name,row.LOB,row.CodeName,row.ExistingSKUProfile,row.Description,row.POMPOD,row.LaunchDate,row.LaunchType,row.Regions,row.AnnounceDate,row.AnnounceFlag,row.AOCIPQ,row.EOCIPQ,row.APOCIPQ,row.LOCIPQ,row.FCCDate,row.DCVolume,row.DTSVolume,row.MSStoreIPQ,row.Notes,row.ChangeDate,row.CreatedBy)
                     cursor.execute(str(newrecords),params)
-            else:
-                cursor.close()
+        cursor.close()
         return redirect(url_for('launches'))
 
 
