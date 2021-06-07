@@ -25,3 +25,4 @@ REDIRECT_PATH = "/getAToken"  # Used for forming an absolute URL to your redirec
 SCOPE = ["User.Read"]
 
 SESSION_TYPE = "filesystem"  # Specifies the token cache should be stored in server-side session
+
