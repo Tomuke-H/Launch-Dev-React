@@ -583,45 +583,48 @@ def launchplantemplate():
     #if not session.get("user"):
     #return redirect(url_for("login"))
     if request.method == 'GET':
+        conn = getSQLConnection(app_config=app_config)
         wb = Workbook()
         my_sheet =  wb.active
         my_sheet2 = wb.create_sheet("Build Plan - Template", 1)
         my_sheet.title = "Launch Plan - Template"
         my_sheet['A1'].value = "Launch-Plan-Template"
-        my_sheet['A3'].value = "Required"
-        my_sheet['B3'].value = "Required"
-        my_sheet['C3'].value = "Required"
-        my_sheet['D3'].value = "Required"
-        my_sheet['F3'].value = "Required"
+
         my_sheet['G3'].value = "Required"
         my_sheet['H3'].value = "Required"
         my_sheet['I3'].value = "Required"
-        my_sheet['K3'].value = "Required"
-        my_sheet['L3'].value = "Required"
-        my_sheet['M3'].value = "Required"
-        my_sheet['N3'].value = "Required"
-        my_sheet['O3'].value = "Required"
+
         my_sheet['A4'].value = "Origin"
         my_sheet['B4'].value = "Destination"
         my_sheet['C4'].value = "Customer"
         my_sheet['D4'].value = "Channel"
-        my_sheet['E4'].value = "Other"
-        my_sheet['F4'].value = "DateType"
-        my_sheet['G4'].value = "TargetDate"
-        my_sheet['H4'].value = "Qty"
-        my_sheet['I4'].value = "FulfillmentScenario"
-        my_sheet['J4'].value = "NodeModeOne"
-        my_sheet['K4'].value = "NodeModeTwo"
-        my_sheet['L4'].value = "NodeModeThree"
-        my_sheet['M4'].value = "NodeModeFour"
-        my_sheet['N4'].value = "NodeModeFive"
-        my_sheet['O4'].value = "NodeModeSix"
+        my_sheet['E4'].value = "DC"
+        my_sheet['F4'].value = "Other"
+        my_sheet['G4'].value = "DateType"
+        my_sheet['H4'].value = "TargetDate"
+        my_sheet['I4'].value = "Qty"
+        my_sheet['J4'].value = "FulfillmentScenario"
+        my_sheet['K4'].value = "NodeModeOne"
+        my_sheet['L4'].value = "NodeModeTwo"
+        my_sheet['M4'].value = "NodeModeThree"
+        my_sheet['N4'].value = "NodeModeFour"
+        my_sheet['O4'].value = "NodeModeFive"
+        my_sheet['P4'].value = "NodeModeSix"
 
         my_sheet2['A1'].value = "Build-Plan-Template"
         my_sheet2['A3'].value = "Not Required"
         my_sheet2['B3'].value = "Not Required"
         my_sheet2['A4'].value = "Date"
         my_sheet2['B4'].value = "BuildQty"
+
+        with conn.cursor() as cursor:
+            selectlaunchplan = text('SELECT [Origin - Port] as Origin,Destination,Customer,Channel,[DC],Other,DateType,CONVERT(varchar,TargetDate,101) as TargetDate,Qty, FulfillmentScenario,NodeModeOne,NodeModeTwo,NodeModeThree,NodeModeFour,NodeModeFive,NodeModeSix from dbo.FactLaunchMasterPlanTemplate')
+            
+            launchplanid = cursor.execute(str(selectlaunchplan))
+            for row in launchplanid.fetchall():
+                row = list(row)
+                print(row)
+                my_sheet.append(row) 
      
     return Response(save_virtual_workbook(wb),headers={'Content-Disposition': 'attatchment;','Content-type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
   
@@ -721,6 +724,9 @@ def uploadlaunchprofilefile():
         launchprofiledf["CreatedBy"] = 'Chosbo@microsoft.com'
         launchprofiledf = launchprofiledf.fillna(value='N/A')
 
+        print("Lets look at this")
+        print(launchprofiledf['AnnounceDate'])
+
         with conn.cursor() as cursor: 
             id = cursor.execute("SELECT DISTINCT Id, Name, LOB,CodeName,ExistingSKUProfile,Description,POMPOD,convert(varchar,LaunchDate,22) as LaunchDate,LaunchType,Regions,convert(varchar,AnnounceDate,22) as AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,convert(varchar,ChangeDate,22) as ChangeDate, CreatedBy FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
             result = id.fetchall()
@@ -728,7 +734,7 @@ def uploadlaunchprofilefile():
             df2 = list(result)
             df2 = pd.DataFrame.from_records(df2, columns = ['Id','Name','LOB','CodeName','ExistingSKUProfile','Description','POMPOD','LaunchDate','LaunchType','Regions','AnnounceDate','AnnounceFlag','AOCIPQ','EOCIPQ','APOCIPQ','LOCIPQ','FCCDate','DCVolume','DTSVolume','MSStoreIPQ','Notes','ChangeDate','CreatedBy'])
             #display(df2)
-            df2 = pd.DataFrame.from_records(df2, columns = ['Id','Name'])
+            df2 = pd.DataFrame.from_records(df2, columns = ['Id','Name']) #Current Profiles Entered
             df = pd.merge(launchprofiledf,df2,on='Name',how='left')
             df = df.fillna(value='N/A')
             newdf = df.loc[(df.Id == 'N/A')] #All New Profiles
@@ -775,30 +781,24 @@ def uploadlaunchplanfile():
         print(FileName, launchID)
         for rownum in range(4,sh.nrows):
             currentrow = list(sh.row_values(rownum))
-            actual = sh.cell_value(rownum, colx=6)
-            date = str(datetime(*xldate_as_tuple(actual, sh.book.datemode)))
-            currentrow.append(date)
+            actual = sh.cell_value(rownum, colx=7)
+            print("Its' here");
+            print(len(str(actual)));
+            if len(str(actual)) > 0 :
+                date = str(datetime(*xldate_as_tuple(actual, sh.book.datemode)))
+                currentrow.append(date)
+            else:
+                date = actual
+                currentrow.append(date)
+
             rows.append(currentrow)
             
         print(rows)
         launchplandf = pd.DataFrame (rows)
         print(launchplandf)
-        launchplandf.columns = ['Origin','Destination', 
-        "Customer","Channel",
-        "Other","DateType","BadDate","Qty",
-        "FulfillmentScenario",
-        "NodeModeOne","NodeModeTwo",
-        "NodeModeThree","NodeModeFour",
-        "NodeModeFive","NodeModeSix","TargetDate"]
+        launchplandf.columns = ['Origin','Destination',"Customer","Channel","DC","Other","DateType","BadDate","Qty","FulfillmentScenario","NodeModeOne","NodeModeTwo","NodeModeThree","NodeModeFour","NodeModeFive","NodeModeSix","TargetDate"]
 
-        launchplandf = launchplandf[['Origin','Destination', 
-        "Customer","Channel",
-        "Other","DateType",
-        "TargetDate","Qty",
-        "FulfillmentScenario",
-        "NodeModeOne","NodeModeTwo",
-        "NodeModeThree","NodeModeFour",
-        "NodeModeFive","NodeModeSix"]]
+        launchplandf = launchplandf[['Origin','Destination',"Customer","Channel","DC","Other","DateType","TargetDate","Qty","FulfillmentScenario","NodeModeOne","NodeModeTwo","NodeModeThree","NodeModeFour","NodeModeFive","NodeModeSix"]]
 
 
         print(launchplandf)
@@ -818,7 +818,7 @@ def uploadlaunchplanfile():
 
       
         id = uuid.uuid1()
-
+        print("Add Columns to DF")
         launchplandf["LaunchPlanId"] = id
         launchplandf["ChangeDate"] = ChangeDate
         launchplandf["UpdatedBy"] = 'Chosbo@microsoft.com'
@@ -843,7 +843,7 @@ def uploadlaunchplanfile():
             #df2 = pd.DataFrame.from_records(df2, columns = ['Name','LOB','CodeName','ExistingSKUProfile','Description','POMPOD','LaunchDate','LaunchType','Regions','AnnounceDate','AnnounceFlag','AOCIPQ','EOCIPQ','APOCIPQ','LOCIPQ','DCVolume','DTSVolume','MSStoreIPQ','Notes','ChangeDate','CreatedBy'])
             #display(df2)
             #deletetext = text("DELETE FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?")
-            inserttext = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchPlans](LaunchPlanId,LaunchProfileId,LaunchPlanName,ChangeDate,Version,UpdatedBy,Origin,Destination,Customer,Channel,Other,DateType,TargetDate,Qty,FulfillmentScenario,NodeModeOne,NodeModeTwo,NodeModeThree,NodeModeFour,NodeModeFive,NodeModeSix)VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            inserttext = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchPlans](LaunchPlanId,LaunchProfileId,LaunchPlanName,ChangeDate,Version,UpdatedBy,Origin,Destination,Customer,Channel,DC,Other,DateType,TargetDate,Qty,FulfillmentScenario,NodeModeOne,NodeModeTwo,NodeModeThree,NodeModeFour,NodeModeFive,NodeModeSix)VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
             insertbuildplan = text("INSERT INTO [launchmodeldev].[dbo].[FactBuildPlans](LaunchPlanId,ChangeDate,Version,UpdatedBy,Date,BuildQty)VALUES(?,?,?,?,?,?)")
             #procedure = text("EXEC sp_Calculator @Version = ?")
             
@@ -854,7 +854,7 @@ def uploadlaunchplanfile():
             #df3.to_csv(r'C:\Users\chosbo\Desktop\testdf.csv',index=False,header=True)
             for row in launchplandf.itertuples():
                 print(row)
-                params =(row.LaunchPlanId,row.LaunchProfileId,row.LaunchPlanName,row.ChangeDate,row.Version,row.UpdatedBy,row.Origin,row.Destination,row.Customer,row.Channel,row.Other,row.DateType,row.TargetDate,row.Qty,row.FulfillmentScenario,row.NodeModeOne,row.NodeModeTwo,row.NodeModeThree,row.NodeModeFour,row.NodeModeFive,row.NodeModeSix)
+                params =(row.LaunchPlanId,row.LaunchProfileId,row.LaunchPlanName,row.ChangeDate,row.Version,row.UpdatedBy,row.Origin,row.Destination,row.Customer,row.Channel,row.DC,row.Other,row.DateType,row.TargetDate,row.Qty,row.FulfillmentScenario,row.NodeModeOne,row.NodeModeTwo,row.NodeModeThree,row.NodeModeFour,row.NodeModeFive,row.NodeModeSix)
                 cursor.execute(str(inserttext),params)
             for row in buildplandf.itertuples():
                 #print(row)
