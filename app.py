@@ -238,8 +238,8 @@ def launchprofiles():
         my_sheet['N4'].value = "APOCIPQ"
         my_sheet['O4'].value = "LOCIPQ"
         my_sheet['P4'].value = "FCCDate"
-        my_sheet['Q4'].value = "FCCDate"
-        my_sheet['R4'].value = "DCVolume"
+        my_sheet['Q4'].value = "DCVolume"
+        my_sheet['R4'].value = "DTSVolume"
         my_sheet['S4'].value = "MSStoreIPQ"
         my_sheet['T4'].value = "Notes"
         #my_sheet.title = "LaunchProfileTemplate"
@@ -304,8 +304,8 @@ def launchplans():
         my_sheet['N4'].value = "APOCIPQ"
         my_sheet['O4'].value = "LOCIPQ"
         my_sheet['P4'].value = "FCCDate"
-        my_sheet['Q4'].value = "FCCDate"
-        my_sheet['R4'].value = "DCVolume"
+        my_sheet['Q4'].value = "DCVolume"
+        my_sheet['R4'].value = "DTSVolume"
         my_sheet['S4'].value = "MSStoreIPQ"
         my_sheet['T4'].value = "Notes"
         my_sheet.title = "LaunchProfileTemplate"
@@ -450,7 +450,7 @@ def launchplandownloadfile():
         my_sheet2['B4'].value = "BuildQty"
         
         with conn.cursor() as cursor:
-            selectlaunchplan = text('SELECT TOP 1 Origin, Destination,Customer,Channel,Other,DateType,CONVERT(varchar,TargetDate,101) as TargetDate,Qty, FulfillmentScenario,NodeModeOne,NodeModeTwo,NodeModeThree, NodeModeFour, NodeModeFive, NodeModeSix from [launchmodeldev].[dbo].[FactLaunchPlans] where LAUNCHPLANNAME = ? ORDER BY ChangeDate DESC')
+            selectlaunchplan = text('SELECT FLP.Origin, FLP.Destination,FLP.Customer,FLP.Channel,FLP.Other,FLP.DateType,CONVERT(varchar,FLP.TargetDate,101) as TargetDate,FLP.Qty, FLP.FulfillmentScenario,FLP.NodeModeOne,FLP.NodeModeTwo,FLP.NodeModeThree,FLP.NodeModeFour,FLP.NodeModeFive,FLP.NodeModeSix from [launchmodeldev].[dbo].[FactLaunchPlans] AS FLP WHERE EXISTS (SELECT TOP 1 [Version] FROM [launchmodeldev].[dbo].[FactLaunchPlans] as latest WHERE latest.LaunchPlanName = ? AND latest.Version = FLP.Version ORDER BY latest.ChangeDate DESC)')
             selectbuildplan = text('SELECT DISTINCT CAST(BPL.Date as date) as [Date],BPL.BuildQty FROM (SELECT TOP 1 [Version] from [launchmodeldev].[dbo].[FactLaunchPlans] WHERE LAUNCHPLANNAME = ? ORDER BY ChangeDate DESC ) AS FLP LEFT JOIN [dbo].[FactBuildPlans] AS BPL on FLP.[Version]=BPL.[Version]') 
             params = launchplanparameter
             launchplanid = cursor.execute(str(selectlaunchplan),params)
@@ -516,8 +516,8 @@ def launchprofiledownloadfile():
         my_sheet['N4'].value = "APOCIPQ"
         my_sheet['O4'].value = "LOCIPQ"
         my_sheet['P4'].value = "FCCDate"
-        my_sheet['Q4'].value = "FCCDate"
-        my_sheet['R4'].value = "DCVolume"
+        my_sheet['Q4'].value = "DCVolume"
+        my_sheet['R4'].value = "DTSVolume"
         my_sheet['S4'].value = "MSStoreIPQ"
         my_sheet['T4'].value = "Notes"
         
@@ -757,7 +757,7 @@ def uploadlaunchprofilefile():
 
 
 @app.route("/uploadlaunchplanfile", methods=['GET','POST'])
-def uploadlaunchplan():
+def uploadlaunchplanfile():
     #if not session.get("user"):
     #    return redirect(url_for("login"))
 
@@ -767,6 +767,12 @@ def uploadlaunchplan():
         rows = []
         wb = xlrd.open_workbook(file_contents=f.read())
         sh = wb.sheet_by_index(0)
+        form = request.form
+        FileName = f.filename
+        ChangeDate = datetime.now()
+        versionparameter = str(FileName) + " - " + str(ChangeDate)
+        launchID = form.get('launchprofilesDropdown')
+        print(FileName, launchID)
         for rownum in range(4,sh.nrows):
             currentrow = list(sh.row_values(rownum))
             actual = sh.cell_value(rownum, colx=6)
@@ -808,14 +814,8 @@ def uploadlaunchplan():
 
         buildplandf = pd.DataFrame(rows,columns=['Date','BuildQty'])
 
-        print(buildplandf)
+        #print(buildplandf)
 
-        form = request.form
-        FileName = f.filename
-        ChangeDate = datetime.now()
-        versionparameter = str(FileName) + " - " + str(ChangeDate)
-        launchID = form.get('launchprofilesDropdown')
-        print(FileName, launchID)
       
         id = uuid.uuid1()
 
@@ -834,7 +834,7 @@ def uploadlaunchplan():
         buildplandf["Version"] = str(FileName) + " - " + str(ChangeDate)
         buildplandf = buildplandf.fillna(value='N/A')
         
-        print(launchplandf)
+        #print(launchplandf)
         with conn.cursor() as cursor:
             #id = cursor.execute("SELECT DISTINCT Name, LOB,CodeName,ExistingSKUProfile,Description,POMPOD,convert(varchar,LaunchDate,22) as LaunchDate,LaunchType,Regions,convert(varchar,AnnounceDate,22) as AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes,convert(varchar,ChangeDate,22) as ChangeDate, CreatedBy FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
             #result = id.fetchall()
@@ -853,7 +853,7 @@ def uploadlaunchplan():
             #display(df3)
             #df3.to_csv(r'C:\Users\chosbo\Desktop\testdf.csv',index=False,header=True)
             for row in launchplandf.itertuples():
-                #print(row)
+                print(row)
                 params =(row.LaunchPlanId,row.LaunchProfileId,row.LaunchPlanName,row.ChangeDate,row.Version,row.UpdatedBy,row.Origin,row.Destination,row.Customer,row.Channel,row.Other,row.DateType,row.TargetDate,row.Qty,row.FulfillmentScenario,row.NodeModeOne,row.NodeModeTwo,row.NodeModeThree,row.NodeModeFour,row.NodeModeFive,row.NodeModeSix)
                 cursor.execute(str(inserttext),params)
             for row in buildplandf.itertuples():
