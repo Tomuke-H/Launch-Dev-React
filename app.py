@@ -675,7 +675,7 @@ def uploadlaunchprofilefile():
     if request.method=="POST":
         conn = getSQLConnection(app_config=app_config)
         f = request.files['fileupload']
-        rows = []
+        rows = []'''
         wb = xlrd.open_workbook(file_contents=f.read())
         sh = wb.sheet_by_index(0)
 
@@ -749,7 +749,7 @@ def uploadlaunchprofilefile():
                 for row in newdf.itertuples():
                     params = (row.Name,row.LOB,row.CodeName,row.ExistingSKUProfile,row.Description,row.POMPOD,row.LaunchDate,row.LaunchType,row.Regions,row.AnnounceDate,row.AnnounceFlag,row.AOCIPQ,row.EOCIPQ,row.APOCIPQ,row.LOCIPQ,row.FCCDate,row.DCVolume,row.DTSVolume,row.MSStoreIPQ,row.Notes,row.ChangeDate,row.CreatedBy)
                     cursor.execute(str(newrecords),params)
-        cursor.close()
+        cursor.close()'''
         return redirect(url_for('launches'))
 
 
