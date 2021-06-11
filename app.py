@@ -675,33 +675,19 @@ def uploadlaunchprofilefile():
     if request.method=="POST":
         conn = getSQLConnection(app_config=app_config)
         f = request.files['fileupload']
+        print(f)
         print(type(f))
         rows = []
-        wb = load_workbook(file_contents=f.read())
-        sh = wb.sheet_by_index(0)
-
-        for rownum in range(4,sh.nrows):
-            currentrow = list(sh.row_values(rownum))
-            LaunchDate = sh.cell_value(rownum, colx=6)
-            AnnounceDate = sh.cell_value(rownum, colx=9)
-            FCCDate = sh.cell_value(rownum, colx=15)
-            print(LaunchDate)
-            print(AnnounceDate)
-            print(FCCDate)
-            print(currentrow)
-            #LaunchDate = str(datetime(*xldate_as_tuple(LaunchDate, sh.book.datemode)))
-            #AnnounceDate = str(datetime(*xldate_as_tuple(AnnounceDate, sh.book.datemode)))
-            #FCCDate = str(datetime(*xldate_as_tuple(FCCDate, sh.book.datemode)))
-            #print(LaunchDate)
-            #print(AnnounceDate)
-            #print(FCCDate)
-            #currentrow.append(FCCDate,LaunchDate,AnnounceDate)
-            print(currentrow)
-            rows.append(currentrow)
-            
-        print(rows)
-        launchprofiledf = pd.DataFrame (rows)
+        wb2 = load_workbook(f)
+        print(wb2.sheetnames)
+        sh = wb2.active
+        print(sh)
+        print(wb2)
+        df = pd.DataFrame(wb2.active.values)
+        launchprofiledf = df.iloc[4:]
         print(launchprofiledf)
+        #wb = xlrd.open_workbook(file_contents=f.read())
+        #sh = wb2.sheet_by_index(0)
         launchprofiledf.columns = ['Name',"LOB",
         "CodeName","ExistingSKUProfile",
         "Description","POMPOD",
@@ -718,7 +704,10 @@ def uploadlaunchprofilefile():
 
         print("Lets look at this")
         print(launchprofiledf['AnnounceDate'])
-
+        print(launchprofiledf['LaunchDate'])
+        print(launchprofiledf['ChangeDate'])
+        print(launchprofiledf['FCCDate'])
+        print(launchprofiledf)
         with conn.cursor() as cursor: 
             id = cursor.execute("SELECT DISTINCT Id, Name, LOB,CodeName,ExistingSKUProfile,Description,POMPOD,convert(varchar,LaunchDate,22) as LaunchDate,LaunchType,Regions,convert(varchar,AnnounceDate,22) as AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,convert(varchar,ChangeDate,22) as ChangeDate, CreatedBy FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
             result = id.fetchall()
