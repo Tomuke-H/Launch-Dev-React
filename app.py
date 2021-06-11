@@ -442,7 +442,7 @@ def launchplandownloadfile():
         my_sheet2['B4'].value = "BuildQty"
         
         with conn.cursor() as cursor:
-            selectlaunchplan = text('SELECT FLP.Origin, FLP.Destination,FLP.Customer,FLP.Channel,FLP.DC,FLP.Other,FLP.DateType,CONVERT(varchar,FLP.TargetDate,101) as TargetDate,FLP.Qty, FLP.FulfillmentScenario,FLP.NodeModeOne,FLP.NodeModeTwo,FLP.NodeModeThree,FLP.NodeModeFour,FLP.NodeModeFive,FLP.NodeModeSix from [launchmodeldev].[dbo].[FactLaunchPlans] AS FLP WHERE EXISTS (SELECT TOP 1 [Version] FROM [launchmodeldev].[dbo].[FactLaunchPlans] as latest WHERE latest.LaunchPlanName = ? AND latest.Version = FLP.Version ORDER BY latest.ChangeDate DESC)')
+            selectlaunchplan = text('SELECT FLP.Origin, FLP.Destination,FLP.Customer,FLP.Channel,FLP.Other,FLP.DateType,CONVERT(varchar,FLP.TargetDate,101) as TargetDate,FLP.Qty, FLP.FulfillmentScenario,FLP.NodeModeOne,FLP.NodeModeTwo,FLP.NodeModeThree,FLP.NodeModeFour,FLP.NodeModeFive,FLP.NodeModeSix from [launchmodeldev].[dbo].[FactLaunchPlans] AS FLP WHERE EXISTS (SELECT TOP 1 [Version] FROM [launchmodeldev].[dbo].[FactLaunchPlans] as latest WHERE latest.LaunchPlanName = ? AND latest.Version = FLP.Version ORDER BY latest.ChangeDate DESC)')
             selectbuildplan = text('SELECT DISTINCT CAST(BPL.Date as date) as [Date],BPL.BuildQty FROM (SELECT TOP 1 [Version] from [launchmodeldev].[dbo].[FactLaunchPlans] WHERE LAUNCHPLANNAME = ? ORDER BY ChangeDate DESC ) AS FLP LEFT JOIN [dbo].[FactBuildPlans] AS BPL on FLP.[Version]=BPL.[Version]') 
             params = launchplanparameter
             launchplanid = cursor.execute(str(selectlaunchplan),params)
