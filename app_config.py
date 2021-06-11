@@ -10,7 +10,7 @@ AUTHORITY = "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011d
 
 SQLRESOURCE = 'HTTPS://database.windows.net/.default'
 
-DEBUG = True
+#DEBUG = True
 
 SQLSERVER= os.getenv("SQL_Server")
 if not SQLSERVER:

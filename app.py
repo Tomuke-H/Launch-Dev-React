@@ -18,7 +18,6 @@ from pyexcel_xls import get_data
 from sqlalchemy.sql.expression import insert
 from sql import getSQLConnection
 from datetime import date, datetime
-from xlrd  import xldate_as_tuple
 from openpyxl import load_workbook, Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
@@ -675,19 +674,11 @@ def uploadlaunchprofilefile():
     if request.method=="POST":
         conn = getSQLConnection(app_config=app_config)
         f = request.files['fileupload']
-        print(f)
-        print(type(f))
         rows = []
         wb2 = load_workbook(f)
-        print(wb2.sheetnames)
         sh = wb2.active
-        print(sh)
-        print(wb2)
         df = pd.DataFrame(wb2.active.values)
         launchprofiledf = df.iloc[4:]
-        print(launchprofiledf)
-        #wb = xlrd.open_workbook(file_contents=f.read())
-        #sh = wb2.sheet_by_index(0)
         launchprofiledf.columns = ['Name',"LOB",
         "CodeName","ExistingSKUProfile",
         "Description","POMPOD",
@@ -752,50 +743,28 @@ def uploadlaunchplanfile():
         conn = getSQLConnection(app_config=app_config)
         f = request.files['fileupload']
         rows = []
-        wb = xlrd.open_workbook(file_contents=f.read())
-        sh = wb.sheet_by_index(0)
+        wb2 = load_workbook(f)
         form = request.form
         FileName = f.filename
         ChangeDate = datetime.now()
         versionparameter = str(FileName) + " - " + str(ChangeDate)
         launchID = form.get('launchprofilesDropdown')
         print(FileName, launchID)
-        for rownum in range(4,sh.nrows):
-            currentrow = list(sh.row_values(rownum))
-            actual = sh.cell_value(rownum, colx=6)
-            print("Its' here");
-            print(len(str(actual)));
-            if len(str(actual)) > 0 :
-                date = str(datetime(*xldate_as_tuple(actual, sh.book.datemode)))
-                currentrow.append(date)
-            else:
-                date = actual
-                currentrow.append(date)
-
-            rows.append(currentrow)
-            
-        print(rows)
-        launchplandf = pd.DataFrame (rows)
-        print(launchplandf)
-        launchplandf.columns = ['Origin','Destination',"Customer","Channel","Other","DateType","BadDate","Qty","FulfillmentScenario","NodeModeOne","NodeModeTwo","NodeModeThree","NodeModeFour","NodeModeFive","NodeModeSix","TargetDate"]
-
-        launchplandf = launchplandf[['Origin','Destination',"Customer","Channel","Other","DateType","TargetDate","Qty","FulfillmentScenario","NodeModeOne","NodeModeTwo","NodeModeThree","NodeModeFour","NodeModeFive","NodeModeSix"]]
-
+        print(wb2.sheetnames)
+        launchsheet = wb2.sheetnames[0]
+        buildsheet = wb2.sheetnames[1]
+        launchplandf = pd.DataFrame(wb2[launchsheet].values)
+        launchplandf = launchplandf.iloc[4:]
+        launchplandf.columns = ['Origin','Destination',"Customer","Channel","Other","DateType","TargetDate","Qty","FulfillmentScenario","NodeModeOne","NodeModeTwo","NodeModeThree","NodeModeFour","NodeModeFive","NodeModeSix"]
 
         print(launchplandf)
-        # Open the workbook
-        rows = []
-        sh = wb.sheet_by_index(1)
-        for rownum in range(4,sh.nrows):  
-            actual = sh.cell_value(rownum, colx=0)
-            buildqty = sh.cell_value(rownum, colx=1)
-            date = datetime(*xldate_as_tuple(actual, sh.book.datemode))
-            rows.append([date,buildqty])
+
+        buildplandf = pd.DataFrame(wb2[buildsheet].values)
+        buildplandf = buildplandf.iloc[4:]
+        buildplandf.columns = ['Date','BuildQty']
 
 
-        buildplandf = pd.DataFrame(rows,columns=['Date','BuildQty'])
-
-        #print(buildplandf)
+        print(buildplandf)
 
       
         id = uuid.uuid1()
