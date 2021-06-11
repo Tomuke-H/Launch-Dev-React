@@ -675,8 +675,9 @@ def uploadlaunchprofilefile():
     if request.method=="POST":
         conn = getSQLConnection(app_config=app_config)
         f = request.files['fileupload']
+        print(type(f))
         rows = []
-        wb = xlrd.open_workbook(file_contents=f.read())
+        wb = load_workbook(file_contents=f.read())
         sh = wb.sheet_by_index(0)
 
         for rownum in range(4,sh.nrows):
