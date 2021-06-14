@@ -47,11 +47,13 @@
                 Launch Insights
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="/launchinsights">View Ship/Build Plan</a></li>
+                <li><a class="dropdown-item" href="/launchinsights">View Ship/Build Plan(s)</a></li>
+                <li><a class="dropdown-item" href="/launchinsights">Track Shipment(s)</a></li>
+                <li><a class="dropdown-item" href="/launchinsights">Azure Maps View(s)</a></li>
               </ul>
             </li>
             <li class="nav-item">
-              <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Admin Center</a>
+              <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Master Data Center</a>
             </li>
           </ul>
           <form class="d-flex">
@@ -91,8 +93,12 @@
           <h4>Please Choose Launch Profile(s) to Download</h4>
           <div class="col-md-3">
             <form class="form-group" id="upload-file" enctype="multipart/form-data">
+
+             <label for="launchprofileDropdown"><b>Launch Profile</b></label>
+              <select class="form-control" id="sel_launchplan" name="launchprofileDropdown" aria-expanded="false"></select> 
               <label for="launchplanDropdown"><b>Launch Plan</b></label>
               <select class="form-control" id="sel_launchplan" name="launchplanDropdown" aria-expanded="false"></select> 
+
           </div>
           <br>
           <button type="button" class="btn btn-primary" id="downloadlaunchplan">Download</button>
