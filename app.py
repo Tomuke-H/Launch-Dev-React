@@ -757,34 +757,45 @@ def uploadlaunchplanfile():
         launchplandf = launchplandf.iloc[4:]
         launchplandf.columns = ['Origin','Destination',"Customer","Channel","Other","DateType","TargetDate","Qty","FulfillmentScenario","NodeModeOne","NodeModeTwo","NodeModeThree","NodeModeFour","NodeModeFive","NodeModeSix"]
 
-        print(launchplandf)
+        #print(launchplandf)
 
         buildplandf = pd.DataFrame(wb2[buildsheet].values)
         buildplandf = buildplandf.iloc[4:]
         buildplandf.columns = ['Date','BuildQty']
 
 
-        print(buildplandf)
+        #print(buildplandf)
 
       
         id = uuid.uuid1()
-        print("Add Columns to DF")
-        launchplandf["LaunchPlanId"] = id
+        #print("Add Columns to DF")
+        launchplandf["LaunchPlanId"] = str(id)
         launchplandf["ChangeDate"] = ChangeDate
         launchplandf["UpdatedBy"] = 'Chosbo@microsoft.com'
         launchplandf["LaunchProfileId"] = launchID
         launchplandf["LaunchPlanName"] = FileName
         launchplandf["Version"] = str(FileName) + " - " + str(ChangeDate)
         launchplandf = launchplandf.fillna(value='N/A')
+        #launchplandf['TargetDate'] = launchplandf.to_datetime(launchplandf['TargetDate'],format="%m/%d/%Y, %H:%M:%S",errors='raise')
+        #launchplandf['ChangeDate'] = launchplandf.to_datetime(launchplandf['ChangeDate'],format="%m/%d/%Y, %H:%M:%S",errors='raise')
+        launchplandf['TargetDate'] = pd.to_datetime(launchplandf['TargetDate'])
+        launchplandf['ChangeDate'] = pd.to_datetime(launchplandf['ChangeDate'])
 
-        buildplandf["LaunchPlanId"] = id
+
+
+        buildplandf["LaunchPlanId"] = str(id)
         buildplandf["ChangeDate"] = ChangeDate
         buildplandf["UpdatedBy"] = 'Chosbo@microsoft.com'
         buildplandf["LaunchPlanName"] = FileName
         buildplandf["Version"] = str(FileName) + " - " + str(ChangeDate)
         buildplandf = buildplandf.fillna(value='N/A')
+        buildplandf['ChangeDate'] = pd.to_datetime(buildplandf['ChangeDate'])
+        #buildplandf['ChangeDate'] = buildplandf.to_datetime(buildplandf['ChangeDate'],format="%m/%d/%Y, %H:%M:%S",errors='raise')
+
+
         
-        #print(launchplandf)
+        print(launchplandf)
+        print(buildplandf)
         with conn.cursor() as cursor:
             #id = cursor.execute("SELECT DISTINCT Name, LOB,CodeName,ExistingSKUProfile,Description,POMPOD,convert(varchar,LaunchDate,22) as LaunchDate,LaunchType,Regions,convert(varchar,AnnounceDate,22) as AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,DCVolume,DTSVolume,MSStoreIPQ,Notes,convert(varchar,ChangeDate,22) as ChangeDate, CreatedBy FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
             #result = id.fetchall()
