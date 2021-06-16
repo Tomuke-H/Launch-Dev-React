@@ -7,7 +7,7 @@
     
     <!-- Bootstrap CSS -->
    <!-- Bootstrap CSS -->
-    <link rel="shortcut icon" type="image/ico" href="images/favicon.ico">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
     <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.5.1.js"></script>
     <title>Launch Planning</title>
@@ -212,7 +212,7 @@
         <div class="row">
             <div class="col-md-3">
               <label for="dcvolume">DC Volume</label>
-              <input type="number" class="form-control" placeholder="DTS Volume" aria-label="DTS Volume" id=dcvolume name='dcvolume'>
+              <input type="number" class="form-control" placeholder="DC Volume" aria-label="DC Volume" id=dcvolume name='dcvolume'>
             </div>
             <div class="col-md-3">
             <label for="dtsvolume">DTS Volume</label>
@@ -243,16 +243,16 @@
         </div>
         <div class="container-fluid" id="uploaddiv" style="display:none">
 
-        <form class="px-4 py-3" action="uploadlaunchprofilefile" method="POST" id="upload-file" enctype="multipart/form-data">
+        <form class="px-4 py-3" action="uploadlaunchprofilefile" method="POST" id="upload-file" enctype="multipart/form-data" id="uploadform">
           <h4>Please Choose and Upload a Launch Profile Template</h4>
           <br>
-          <input type="file" name="fileupload" id="fileToUpload">
-          <input type="submit" value="Upload File" name="submit" id="uploaded">
+          <input type="file" name="fileupload" id="fileToUpload" accept=".xlsx">
+          <input type="submit" value="Upload File" name="submit" id="uploaded" >
         </form>
       </div>
       <div class="container-fluid" id="editdiv" style="display:none">
        
-        <form class="px-4 py-3" action="uploadfile" method="POST" id="upload-file" enctype="multipart/form-data">
+       <form class="px-4 py-3" action="uploadfile" method="POST" id="upload-file" enctype="multipart/form-data">
           <h4>Please Choose Launch Profile(s) to Download</h4>
           <div class="col-md-3">
             <form class="form-group" id="upload-file" enctype="multipart/form-data">
@@ -380,6 +380,8 @@
 
       $(document).ready(function(){
 
+      
+
 
 
 /*
@@ -426,7 +428,14 @@
 
 
         $('#downloadlaunchprofile').on('click',function(){
-          alert("Downloaded CSV");
+          /*
+          var multiselectpost = [];
+          $("input:checkbox[name='multiselectpost']:checked").each(function(){
+            multiselectpost.push($(this).val());
+          });
+          console.log(multiselectpost);*/
+
+          //alert("Downloaded CSV");
           var title = 'LaunchProfile-'
           var selectedvalue = $("#sel_launchprofile").find("option:selected").text();
           console.log(selectedvalue);
@@ -452,6 +461,7 @@
                     return xhr;
                 },
                 success: function (data) {
+                    alert("Downloaded Launch Profile Excel File Successfully!");
                     //Convert the Byte Data to BLOB object.
                     fileName = selectedvalue + " - Launch Profile(s).xlsx"
                     console.log(data);
@@ -612,18 +622,52 @@
             }
               return;
           };
-          $.ajax({
+         if($.ajax({
                 type: "POST",
                 dataType:'json',
                 data: data,
                 url: "launchprofiles",
-                success: function(msg){
-                    alert("Launch Profile Saved!"); 
-                    $('.answer').html(msg);
+                complete: function(r){
+                  //console.log(r.responseText);
+                  if(r.responseText !== 'Success'){
+                    //Failure Message//
+                    alert(r.responseText); 
+                    console.log("issue");
+                  }else{
+                    console.log("Success");
+                    alert("Launch Profile Created Successfully!");
+                    $('#LaunchProfileForm')[0].reset();
+                    }
+                 
                   }
-                });
-          event.preventDefault();
-          $('#LaunchProfileForm')[0].reset();
+                   
+                }).responseText !== 'Success'){
+                  event.preventDefault();
+                  }
+                  
+
+        
+              
+        
+
+      
+          
+          
+          //alert("Launch Profile Uploaded Successfully");
+
+        $.ajax({
+            method: "GET",
+            url: "launchparameters",
+            success: function(response){
+            //console.log(response);
+            var s = '<option selected="selected" value ="-1">All</option>';
+            for (var i=0; i <response.length;i++){
+              s += '<option value="' + response[i].LProfileId + '">' + response[i].LProfileName + '</option>';  
+              }  
+              $("#sel_launchprofile").html(s);  
+            }
+          });
+
         });
 
         //Populate DropDown for Launch Selection//
@@ -639,11 +683,26 @@
               $("#sel_launchprofile").html(s);  
             }
           });
-
+          
           $('#sel_launchprofile').change(function () {
              var selectedText = $(this).find("option:selected").text();
              console.log(selectedText)
               });
+
+        /*
+          $.ajax({
+            method: "GET",
+            url: "launchparameters",
+            success: function(response){
+            //console.log(response);
+            var s;
+            for (var i=0; i <response.length;i++){
+              s += '<div class="form-check"><input class="form-check-input" type="checkbox" name="multiselectpost" value='+ response[i].LProfileId +'id='+response[i].LProfileName+'checked/><label class="form-check-label" for='+response[i].LProfileName+'>'+response[i].LProfileName+'</label></div>';  
+              }  
+              $("#sel_launchprofileV2").html(s);  
+            }
+          });*/
+
 
         //Upload Profile Data to Database//
              $(document).ready ( function(){
@@ -661,8 +720,7 @@
         
 
         $('#uploaded').on('click',function(){
-          console.log('Shit was clicked!')
-          alert("Successfully Processed Your Launch Plan!");
+          alert("Successfully Uploaded Your Launch Profile Excel File!");
           });
 
         //$('#downloadlaunchprofile').on('click',DownloadFiles("AddedFCCDate"));

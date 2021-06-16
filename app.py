@@ -12,7 +12,6 @@ import os
 from os.path import join, dirname, realpath
 import pandas as pd
 import io
-import xlrd  
 import flask_excel as excel
 from pyexcel_xls import get_data
 from sqlalchemy.sql.expression import insert
@@ -731,6 +730,7 @@ def uploadlaunchprofilefile():
                     params = (row.Name,row.LOB,row.CodeName,row.ExistingSKUProfile,row.Description,row.POMPOD,row.LaunchDate,row.LaunchType,row.Regions,row.AnnounceDate,row.AnnounceFlag,row.AOCIPQ,row.EOCIPQ,row.APOCIPQ,row.LOCIPQ,row.FCCDate,row.DCVolume,row.DTSVolume,row.MSStoreIPQ,row.Notes,row.ChangeDate,row.CreatedBy)
                     cursor.execute(str(newrecords),params)
         cursor.close()
+        
         return redirect(url_for('launches'))
 
 
@@ -1147,6 +1147,18 @@ def get_sku_in_launch(name):
     return jsonify({"message":"Sku Not Found"})
 
 '''
+
+@app.errorhandler(Exception) 
+def basic_error(e): 
+    # fetch some info about the user from the request object 
+    user_ip = request.remote_addr 
+    requested_path = request.path 
+ 
+    print("User with IP %s tried to access endpoint: %s" % (user_ip , requested_path)) 
+    print("An error occurred: " + str(e) )
+    responseobject = "An error occurred: " + str(e) 
+    return responseobject
+
 app.jinja_env.globals.update(_build_auth_code_flow=_build_auth_code_flow)  # Used in template
 
 if __name__ == '__main__':
