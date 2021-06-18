@@ -235,7 +235,7 @@
                 },
                 success: function (data) {
                     //Convert the Byte Data to BLOB object.
-                    fileName = selectedvalue + " - Launch Plan.xlsx"
+                    fileName = "Launch Plan - " + selectedvalue
                     console.log(data);
                     var blob = new Blob([data], { type: "application/octetstream" });
  
