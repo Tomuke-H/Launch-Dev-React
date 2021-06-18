@@ -95,9 +95,11 @@
             <form class="form-group" id="upload-file" enctype="multipart/form-data">
 
              <label for="launchprofileDropdown"><b>Launch Profile</b></label>
-              <select class="form-control" id="sel_launchplan" name="launchprofileDropdown" aria-expanded="false"></select> 
+              <select class="form-control" id="sel_launchprofilev2"  name="launchprofileDropdown" aria-expanded="false"></select> 
               <label for="launchplanDropdown"><b>Launch Plan</b></label>
               <select class="form-control" id="sel_launchplan" name="launchplanDropdown" aria-expanded="false"></select> 
+              <label for="launchplanversiondropdown"><b>Version</b></label>
+              <select class="form-control" id="sel_launchplanversion" name="launchplanversiondropdown" aria-expanded="false"></select> 
 
           </div>
           <br>
@@ -163,6 +165,16 @@
 
 
       $(document).ready(function (){
+
+
+
+
+
+
+        
+
+
+
        
       //Populate Drop Down for Launch Profile Selection//
       $.ajax({
@@ -174,9 +186,25 @@
             for (var i=0; i <response.length;i++){
               s += '<option value="' + response[i].LProfileId + '">' + response[i].LProfileName + '</option>';  
               }  
-              $("#sel_launchprofile").html(s);  
+              $("#sel_launchprofile").html(s);
+              $("#sel_launchprofilev2").html(s);  
             }
           });
+
+       $.ajax({
+            method: "GET",
+            url: "launchversions",
+            success: function(response){
+            //console.log(response);
+            var s //= '<option selected="selected" value ="0"></option>';
+            for (var i=0; i <response.length;i++){
+              s += '<option value="' + response[i].version + '">' + response[i].version + '</option>';  
+              }  
+              $("#sel_launchplanversion").html(s);
+            }
+          });
+
+    
       //Populate DropDown for Launch Plan Selection
            $.ajax({
             method: "GET",
@@ -205,6 +233,9 @@
              console.log(selectedText)
              var selectedvalue = $("#sel_launchplan").find("option:selected").text();
               });
+
+
+     
 
 
           $('#downloadlaunchplan').on('click',function(){
@@ -257,6 +288,8 @@
             });
                 
         });
+
+            
 
 
 
@@ -393,12 +426,15 @@
                 $('input:submit').attr('disabled',true);
             }
         });
-        });   
+
+    });   
 
 
-        //$('#uploaded').on('click',function(){
-        //  alert("Successfully Processed Your Launch Plan!");
-        //});
+
+
+        $('#uploaded').on('click',function(){
+          alert("Successfully Processed Your Launch Plan!");
+        });
       
 
         function Export_JSON_to_CSV(JSONString, ReportName, isShowHeader) {
