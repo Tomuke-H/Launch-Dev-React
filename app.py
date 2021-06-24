@@ -482,7 +482,7 @@ def launchprofiledownloadfile():
     #    return redirect(url_for("login"))
 
     launchprofileparameter = request.args.get('launchprofileparameter')
-
+    
     if request.method == "GET":
         data = request.get_json()
         conn = getSQLConnection(app_config=app_config)
@@ -490,16 +490,13 @@ def launchprofiledownloadfile():
         wb = Workbook()
         my_sheet = wb.active
         #wb.title = "Launch-Profile-Template"
-        print(launchprofileparameter)
+        print(launchprofileparameter) #string "," of project names
         print("Workbook Created")
-        if launchprofileparameter == "All" :
-            wb.title = "All-Launch Profiles"
-            my_sheet.title = "All-Launch Profiles"
-        else :
-            wb.title = launchprofileparameter + "- Launch Profile"
-            my_sheet.title = launchprofileparameter 
-        print(wb.title)
-     
+        paramlist = (launchprofileparameter.split(",")) #List of profile names
+        length = int(len(paramlist))
+        selectall = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles]')
+        selectone = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
+        #i = 0
         my_sheet['A1'].value = "Launch-Profile-Template"
         my_sheet['A3'].value = "Required"
         my_sheet['B3'].value = "Required"
@@ -530,19 +527,45 @@ def launchprofiledownloadfile():
         my_sheet['R4'].value = "DTSVolume"
         my_sheet['S4'].value = "MSStoreIPQ"
         my_sheet['T4'].value = "Notes"
-        
+
+        print(len(paramlist))
+        print(length);
+        print(type(length))
+
         with conn.cursor() as cursor:
-            selectall = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles]')
-            selectone = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
-            params = (launchprofileparameter)
-            if launchprofileparameter == "All" :
+            if 'All' in paramlist: #All Parameter give me everything
                 id = cursor.execute(str(selectall))
-            else :
-                id = cursor.execute(str(selectone),params)
-            for row in id.fetchall():
-                row = list(row)
-                print(row)
-                my_sheet.append(row) 
+                for row in id.fetchall():
+                    row = list(row)
+                    print(row)
+                    my_sheet.append(row)
+            else:
+                for i in paramlist:
+                    print(i)
+                    print("we are looping!")
+                    print(type(i))
+                    print(i)
+                    param = i
+                    id = cursor.execute(str(selectone),param)
+                    print("query executed!")
+                    for row in id.fetchall():
+                        row = list(row)
+                        print(row)
+                        my_sheet.append(row)
+                        print("Success writing to file!")
+                    
+        cursor.close()
+        
+        if 'All' in paramlist:
+            wb.title = "All-Launch Profiles"
+            my_sheet.title = "All-Launch Profiles"
+        elif len(paramlist) < 1:
+            wb.title = str(paramlist[0]) + "- Launch Profile"
+            my_sheet.title = str(paramlist[0]) +"- Launch Profile"
+        elif len(paramlist) > 0:
+            wb.title = "Multiple- Launch Profiles"
+            my_sheet.title = "Multiple- Launch Profiles"
+
     print("YES 200!")
     print(wb.sheetnames)
     return Response(save_virtual_workbook(wb),headers={'Content-Disposition': 'attatchment;','Content-type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
@@ -552,7 +575,7 @@ def launchprofiledownloadfile():
     if request.method=="POST":
         conn = getSQLConnection(app_config=app_config)
         f = request.files['fileupload']
-        #print('FUCK!')
+        
         #print(f) 
         form = request.form
         FileName = f.filename
