@@ -151,6 +151,7 @@
               <label for="launchtypeid">Launch Type</label> 
               <select type="text" class="form-select" required placeholder="Launch Type" id="launchtypeid" name="launchtypeid">
                 <option value="">Required Value</option>
+                    <option value="TBD">TBD</option>
                     <option value="GA">GA</option>
                     <option value="MSD">MSD</option>
                     <option value="FSD">FSD</option>
@@ -161,7 +162,8 @@
                   <label for="regionid">Region(s)</label>
                   <select multiple class="form-control" type="text" placeholder="Regions" aria-label="Regions" id='regionsid' name='regionsid' required>
                    <!--<option selected="selected" value ="-1"></option> !-->
-                   <option value="AOC">AOC</option>
+                    <option value="TBD">TBD</option>
+                    <option value="AOC">AOC</option>
                     <option value="EOC">EOC</option>
                     <option value="APOC">APOC</option>
                     <option value="LOC">LOC</option>
@@ -719,7 +721,11 @@
             var jsonData = JSON.stringify(response);
             $.each(JSON.parse(jsonData), function (idx, obj) {
              $("#sel_launchprofileV3").append('<option value="' + obj.LProfileId + '">' + obj.LProfileName + '</option>').selectpicker('refresh');
-            }); 
+            });
+
+      
+
+
             }
           });
 

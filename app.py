@@ -371,7 +371,7 @@ def launchparameters():
         data = request.get_json()
         conn = getSQLConnection(app_config=app_config)
         with conn.cursor() as cursor:
-            id = cursor.execute("SELECT DISTINCT * FROM [launchmodeldev].[dbo].[vw_LaunchPlans]")
+            id = cursor.execute("SELECT DISTINCT * FROM [launchmodeldev].[dbo].[vw_LaunchPlans] Order by LProfileName ASC")
             columns = [column[0] for column in id.description]
             print(columns)
             results = []
