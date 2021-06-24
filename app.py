@@ -151,6 +151,7 @@ def _getSQLToken():
 @app.route('/launchprofiles', methods=['GET', 'POST'])
 def launchprofiles():
     launchprofileparameter = request.args.get('launchprofileparameter')
+    xstr = lambda s: None if s == '' else s
     #print(launchprofileparameter)
     #if not session.get("user"):
     #    return redirect(url_for("login"))
@@ -182,11 +183,15 @@ def launchprofiles():
             DTSVolume = data.get('dtsvolume')
             MSStoreIPQ = data.get("msstoreipq")
             Notes = data.get('notesid')
-            ChangeDate = datetime.now()
+            ChangeDate = datetime.now() 
             Createdby = 'chosbo@microsoft.com'
-            params =(name,LOB,codeName,existingSKUProfile,Description,POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,Createdby)
+            params =(name,LOB,codeName,existingSKUProfile,Description,POMPOD,LaunchDate,LaunchType,Regions,xstr(AnnounceDate),AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,xstr(FCCDate),DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,Createdby)
+            print(params)
             cursor.execute(str(insert),params)
             print("Entered")
+
+            
+
         return 'Success'
         #redirect(url_for("launchprofile"))
         #'Success' redirect(url_for("login")) return redirect(url_for("/LaunchPlans"))
@@ -680,6 +685,7 @@ def launchprofiletemplate():
 
 
 #Uploads
+#Uploads for excel and Launch Date Doing weird String bullshit
 
 @app.route("/uploadlaunchprofilefile", methods=['GET','POST'])
 def uploadlaunchprofilefile():
@@ -705,14 +711,19 @@ def uploadlaunchprofilefile():
         "Notes"]
         launchprofiledf["ChangeDate"] = datetime.now()
         launchprofiledf["CreatedBy"] = 'Chosbo@microsoft.com'
-        launchprofiledf = launchprofiledf.fillna(value='N/A')
+        #launchprofiledf['LaunchDate'] = pd.to_datetime(launchprofiledf['LaunchDate'])
+        #launchprofiledf['ChangeDate'] = pd.to_datetime(launchprofiledf['ChangeDate'])
+        #launchprofiledf['AnnounceDate'] = pd.to_datetime(launchprofiledf['AnnounceDate'])
+        #launchprofiledf['FCCDate'] = pd.to_datetime(launchprofiledf['FCCDate'])
+        #launchprofiledf = launchprofiledf.fillna(value='N/A')
+
 
         print("Lets look at this")
-        print(launchprofiledf['AnnounceDate'])
-        print(launchprofiledf['LaunchDate'])
-        print(launchprofiledf['ChangeDate'])
-        print(launchprofiledf['FCCDate'])
-        print(launchprofiledf)
+        #print(launchprofiledf['AnnounceDate'])
+        #print(launchprofiledf['LaunchDate'])
+        #print(launchprofiledf['ChangeDate'])
+        #print(launchprofiledf['FCCDate'])
+        #print(launchprofiledf)
         with conn.cursor() as cursor: 
             id = cursor.execute("SELECT DISTINCT Id, Name, LOB,CodeName,ExistingSKUProfile,Description,POMPOD,convert(varchar,LaunchDate,22) as LaunchDate,LaunchType,Regions,convert(varchar,AnnounceDate,22) as AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,convert(varchar,ChangeDate,22) as ChangeDate, CreatedBy FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
             result = id.fetchall()
@@ -720,30 +731,55 @@ def uploadlaunchprofilefile():
             df2 = list(result)
             df2 = pd.DataFrame.from_records(df2, columns = ['Id','Name','LOB','CodeName','ExistingSKUProfile','Description','POMPOD','LaunchDate','LaunchType','Regions','AnnounceDate','AnnounceFlag','AOCIPQ','EOCIPQ','APOCIPQ','LOCIPQ','FCCDate','DCVolume','DTSVolume','MSStoreIPQ','Notes','ChangeDate','CreatedBy'])
             #display(df2)
-            df2 = pd.DataFrame.from_records(df2, columns = ['Id','Name']) #Current Profiles Entered
-            df = pd.merge(launchprofiledf,df2,on='Name',how='left')
-            df = df.fillna(value='N/A')
+            df2 = pd.DataFrame.from_records(df2, columns = ['Id','Name']) #Current Profiles Entered in Tool
+            df = pd.merge(launchprofiledf,df2,on='Name',how='left') #Uploaded Launches that have matches from database
+            df['Id'] = df['Id'].fillna(value='N/A') #All non-matches get assigned a 'N/A' value for ID
+            #df = df.fillna(value='N/A')
+            print("Merged Dataset")
+            print(df.keys())
             newdf = df.loc[(df.Id == 'N/A')] #All New Profiles
-            df = df.loc[(df.Id != 'N/A')] #All Existing Profiles
-            print(df.columns)
-            print(df)
-            print(newdf)
+            df = df.loc[(df.Id != 'N/A')] #All Existing Profiles in database
+
+          
+            newdf['LaunchDate'] = pd.to_datetime(newdf['LaunchDate'])
+            newdf['FCCDate'] = pd.to_datetime(newdf['FCCDate'])
+            newdf['ChangeDate'] = pd.to_datetime(newdf['ChangeDate'])
+            newdf['AnnounceDate'] = pd.to_datetime(newdf['AnnounceDate'])
+
+
+            newdf['FCCDate'] = (newdf['FCCDate'].astype(str).replace({'NaT': None}))
+            newdf['AnnounceDate'] = (newdf['AnnounceDate'].astype(str).replace({'NaT': None}))              
+            newdf['LaunchDate'] = (newdf['LaunchDate'].astype(str).replace({'NaT': None})) 
+
+            df['LaunchDate'] = pd.to_datetime(df['LaunchDate'])
+            df['FCCDate'] = pd.to_datetime(df['FCCDate'])
+            df['ChangeDate'] = pd.to_datetime(df['ChangeDate'])
+            df['AnnounceDate'] = pd.to_datetime(df['AnnounceDate'])
+
+            df['FCCDate'] = (df['FCCDate'].astype(str).replace({'NaT': None}))
+            df['AnnounceDate'] = (df['AnnounceDate'].astype(str).replace({'NaT': None}))              
+            df['LaunchDate'] = (df['LaunchDate'].astype(str).replace({'NaT': None})) 
+           
+
+  
             #updatetext = text("UPDATE [launchmodeldev].[dbo].[FactLaunchProfiles] SET Name=?,LOB=?,CodeName=?,ExistingSKUProfile=?,Description=?,POMPOD=?,LaunchDate=?,LaunchType=?,Regions=?,AnnounceDate=?,AnnaounceFlag=?,AOCIPQ=?,EOCIPQ=?,APOCIPQ=?,LOCIPQ=?,FCCDate=?,DCVolume=?,DTSVolume=?,MSStoreIPQ=?,Notes=?,ChangeDate=?,CreatedBy=? where Name=?")
             deletetext = text("DELETE FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE Id = ?")
             inserttext = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles](Id,Name,LOB,CodeName,ExistingSKUProfile,Description, POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
             newrecords = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles](Id,Name,LOB,CodeName,ExistingSKUProfile,Description, POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy) VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
             
             if df.empty == False:
+                print("we hit df")
                 for row in df.itertuples():
-                    print(row.Name)
                     params = (row.Id)
                     cursor.execute(str(deletetext),params)
                     params = (row.Id,row.Name,row.LOB,row.CodeName,row.ExistingSKUProfile,row.Description,row.POMPOD,row.LaunchDate,row.LaunchType,row.Regions,row.AnnounceDate,row.AnnounceFlag,row.AOCIPQ,row.EOCIPQ,row.APOCIPQ,row.LOCIPQ,row.FCCDate,row.DCVolume,row.DTSVolume,row.MSStoreIPQ,row.Notes,row.ChangeDate,row.CreatedBy)
                     cursor.execute(str(inserttext),params)
             if newdf.empty == False:
+                print("we hit newdf")
                 for row in newdf.itertuples():
                     params = (row.Name,row.LOB,row.CodeName,row.ExistingSKUProfile,row.Description,row.POMPOD,row.LaunchDate,row.LaunchType,row.Regions,row.AnnounceDate,row.AnnounceFlag,row.AOCIPQ,row.EOCIPQ,row.APOCIPQ,row.LOCIPQ,row.FCCDate,row.DCVolume,row.DTSVolume,row.MSStoreIPQ,row.Notes,row.ChangeDate,row.CreatedBy)
                     cursor.execute(str(newrecords),params)
+        
         cursor.close()
         
         return redirect(url_for('launches'))
