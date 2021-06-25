@@ -162,7 +162,7 @@ def launchprofiles():
         #return(print(region))
         conn = getSQLConnection(app_config=app_config)
         with conn.cursor() as cursor:
-            insert = text('INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles] VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+            insert = text('INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles] VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
             name  = data.get('launchprofilenameid')
             LOB = data.get('lobid')
             codeName = data.get('codenameid')
@@ -179,13 +179,14 @@ def launchprofiles():
             APOCIPQ = data.get('apocipq')
             LOCIPQ = data.get('locipq')
             FCCDate = data.get('fccdateid')
+            PQSDate = data.get('pqsdateid')
             DCVolume = data.get('dcvolume')
             DTSVolume = data.get('dtsvolume')
             MSStoreIPQ = data.get("msstoreipq")
             Notes = data.get('notesid')
             ChangeDate = datetime.now() 
             Createdby = 'chosbo@microsoft.com'
-            params =(name,LOB,codeName,existingSKUProfile,Description,POMPOD,LaunchDate,LaunchType,Regions,xstr(AnnounceDate),AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,xstr(FCCDate),DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,Createdby)
+            params =(name,LOB,codeName,existingSKUProfile,Description,POMPOD,LaunchDate,LaunchType,Regions,xstr(AnnounceDate),AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,xstr(FCCDate),xstr(PQSDate),DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,Createdby)
             print(params)
             cursor.execute(str(insert),params)
             print("Entered")
@@ -241,15 +242,16 @@ def launchprofiles():
         my_sheet['N4'].value = "APOCIPQ"
         my_sheet['O4'].value = "LOCIPQ"
         my_sheet['P4'].value = "FCCDate"
-        my_sheet['Q4'].value = "DCVolume"
-        my_sheet['R4'].value = "DTSVolume"
-        my_sheet['S4'].value = "MSStoreIPQ"
-        my_sheet['T4'].value = "Notes"
+        my_sheet['Q4'].value = "PQSDate"
+        my_sheet['R4'].value = "DCVolume"
+        my_sheet['S4'].value = "DTSVolume"
+        my_sheet['T4'].value = "MSStoreIPQ"
+        my_sheet['U4'].value = "Notes"
         #my_sheet.title = "LaunchProfileTemplate"
 
         with conn.cursor() as cursor:
-            selectall = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles]')
-            selectone = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
+            selectall = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,CONVERT(varchar,PQSDate,101) as PQSDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles]')
+            selectone = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,CONVERT(varchar,PQSDate,101) as PQSDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
             params = (launchprofileparameter)
             if launchprofileparameter == "All" :
                 id = cursor.execute(str(selectall))
@@ -372,6 +374,23 @@ def launchparameters():
         conn = getSQLConnection(app_config=app_config)
         with conn.cursor() as cursor:
             id = cursor.execute("SELECT DISTINCT * FROM [launchmodeldev].[dbo].[vw_LaunchPlans] Order by LProfileName ASC")
+            columns = [column[0] for column in id.description]
+            print(columns)
+            results = []
+            for row in id.fetchall():
+                results.append(dict(zip(columns, row)))
+            print(jsonify(results))
+        return jsonify(results)
+
+@app.route('/cascadingmeasures', methods=['GET', 'POST'])
+def cascadingmeasures():
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+    if request.method == 'GET':
+        data = request.get_json()
+        conn = getSQLConnection(app_config=app_config)
+        with conn.cursor() as cursor:
+            id = cursor.execute("SELECT DISTINCT profiles.LProfileName,profiles.LProfileId,Launch.LaunchPlanName,Launch.LaunchPlanId,Launch.[Version] FROM [launchmodeldev].[dbo].[vw_LaunchPlans] as profiles LEFT JOIN [dbo].[FactLaunchPlans] as Launch  on  profiles.LProfileId = Launch.LaunchProfileId where Launch.LaunchPlanName is not null Order by profiles.LProfileName ASC")
             columns = [column[0] for column in id.description]
             print(columns)
             results = []
@@ -729,7 +748,7 @@ def uploadlaunchprofilefile():
         "Regions","AnnounceDate",
         "AnnounceFlag","AOCIPQ",
         "EOCIPQ","APOCIPQ",
-        "LOCIPQ","FCCDate","DCVolume",
+        "LOCIPQ","FCCDate","PQSDate","DCVolume",
         "DTSVolume","MSStoreIPQ",
         "Notes"]
         launchprofiledf["ChangeDate"] = datetime.now()
@@ -748,11 +767,11 @@ def uploadlaunchprofilefile():
         #print(launchprofiledf['FCCDate'])
         #print(launchprofiledf)
         with conn.cursor() as cursor: 
-            id = cursor.execute("SELECT DISTINCT Id, Name, LOB,CodeName,ExistingSKUProfile,Description,POMPOD,convert(varchar,LaunchDate,22) as LaunchDate,LaunchType,Regions,convert(varchar,AnnounceDate,22) as AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,convert(varchar,ChangeDate,22) as ChangeDate, CreatedBy FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
+            id = cursor.execute("SELECT DISTINCT Id, Name, LOB,CodeName,ExistingSKUProfile,Description,POMPOD,convert(varchar,LaunchDate,22) as LaunchDate,LaunchType,Regions,convert(varchar,AnnounceDate,22) as AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,CONVERT(varchar,PQSDate,101) as PQSDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,convert(varchar,ChangeDate,22) as ChangeDate, CreatedBy FROM [launchmodeldev].[dbo].[FactLaunchProfiles]")
             result = id.fetchall()
             #pd.option_context('display.max_rows',None,'display.max_columns',None,'display.precision',3)
             df2 = list(result)
-            df2 = pd.DataFrame.from_records(df2, columns = ['Id','Name','LOB','CodeName','ExistingSKUProfile','Description','POMPOD','LaunchDate','LaunchType','Regions','AnnounceDate','AnnounceFlag','AOCIPQ','EOCIPQ','APOCIPQ','LOCIPQ','FCCDate','DCVolume','DTSVolume','MSStoreIPQ','Notes','ChangeDate','CreatedBy'])
+            df2 = pd.DataFrame.from_records(df2, columns = ['Id','Name','LOB','CodeName','ExistingSKUProfile','Description','POMPOD','LaunchDate','LaunchType','Regions','AnnounceDate','AnnounceFlag','AOCIPQ','EOCIPQ','APOCIPQ','LOCIPQ','FCCDate','PQSDate','DCVolume','DTSVolume','MSStoreIPQ','Notes','ChangeDate','CreatedBy'])
             #display(df2)
             df2 = pd.DataFrame.from_records(df2, columns = ['Id','Name']) #Current Profiles Entered in Tool
             df = pd.merge(launchprofiledf,df2,on='Name',how='left') #Uploaded Launches that have matches from database
@@ -766,20 +785,24 @@ def uploadlaunchprofilefile():
           
             newdf['LaunchDate'] = pd.to_datetime(newdf['LaunchDate'])
             newdf['FCCDate'] = pd.to_datetime(newdf['FCCDate'])
+            newdf['PQSDate'] = pd.to_datetime(newdf['PQSDate'])
             newdf['ChangeDate'] = pd.to_datetime(newdf['ChangeDate'])
             newdf['AnnounceDate'] = pd.to_datetime(newdf['AnnounceDate'])
 
 
             newdf['FCCDate'] = (newdf['FCCDate'].astype(str).replace({'NaT': None}))
+            newdf['PQSDate'] = (newdf['PQSDate'].astype(str).replace({'NaT': None}))
             newdf['AnnounceDate'] = (newdf['AnnounceDate'].astype(str).replace({'NaT': None}))              
             newdf['LaunchDate'] = (newdf['LaunchDate'].astype(str).replace({'NaT': None})) 
 
             df['LaunchDate'] = pd.to_datetime(df['LaunchDate'])
             df['FCCDate'] = pd.to_datetime(df['FCCDate'])
+            df['PQSDate'] = pd.to_datetime(df['PQSDate'])
             df['ChangeDate'] = pd.to_datetime(df['ChangeDate'])
             df['AnnounceDate'] = pd.to_datetime(df['AnnounceDate'])
 
             df['FCCDate'] = (df['FCCDate'].astype(str).replace({'NaT': None}))
+            df['PQSDate'] = (df['PQSDate'].astype(str).replace({'NaT': None}))
             df['AnnounceDate'] = (df['AnnounceDate'].astype(str).replace({'NaT': None}))              
             df['LaunchDate'] = (df['LaunchDate'].astype(str).replace({'NaT': None})) 
            
@@ -787,8 +810,8 @@ def uploadlaunchprofilefile():
   
             #updatetext = text("UPDATE [launchmodeldev].[dbo].[FactLaunchProfiles] SET Name=?,LOB=?,CodeName=?,ExistingSKUProfile=?,Description=?,POMPOD=?,LaunchDate=?,LaunchType=?,Regions=?,AnnounceDate=?,AnnaounceFlag=?,AOCIPQ=?,EOCIPQ=?,APOCIPQ=?,LOCIPQ=?,FCCDate=?,DCVolume=?,DTSVolume=?,MSStoreIPQ=?,Notes=?,ChangeDate=?,CreatedBy=? where Name=?")
             deletetext = text("DELETE FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE Id = ?")
-            inserttext = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles](Id,Name,LOB,CodeName,ExistingSKUProfile,Description, POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-            newrecords = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles](Id,Name,LOB,CodeName,ExistingSKUProfile,Description, POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy) VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            inserttext = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles](Id,Name,LOB,CodeName,ExistingSKUProfile,Description, POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,FCCDate,PQSDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            newrecords = text("INSERT INTO [launchmodeldev].[dbo].[FactLaunchProfiles](Id,Name,LOB,CodeName,ExistingSKUProfile,Description, POMPOD,LaunchDate,LaunchType,Regions,AnnounceDate,AnnounceFlag,AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,FCCDate,PQSDate,DCVolume,DTSVolume,MSStoreIPQ,Notes,ChangeDate,CreatedBy) VALUES(NEWID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
             
             if df.empty == False:
                 print("we hit df")
