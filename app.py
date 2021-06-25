@@ -513,8 +513,8 @@ def launchprofiledownloadfile():
         print("Workbook Created")
         paramlist = (launchprofileparameter.split(",")) #List of profile names
         length = int(len(paramlist))
-        selectall = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles]')
-        selectone = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
+        selectall = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,CONVERT(varchar,PQSDate,101) as PQSDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles]')
+        selectone = text('SELECT DISTINCT Name as LaunchProfileName, LOB as LineOfBusiness,CodeName,ExistingSKUProfile,Description,POMPOD as [POM/POD],CONVERT(varchar,LaunchDate,101) as LaunchDate,LaunchType,Regions as [Region(s)],CONVERT(varchar,AnnounceDate,101) as AnnounceDate,AnnounceFlag as [Announced(Y/N)],AOCIPQ,EOCIPQ,APOCIPQ,LOCIPQ,CONVERT(varchar,FCCDate,101) as FCCDate,CONVERT(varchar,PQSDate,101) as PQSDate,DCVolume,DTSVolume,MSStoreIPQ,Notes FROM [launchmodeldev].[dbo].[FactLaunchProfiles] WHERE NAME = ?')
         #i = 0
         my_sheet['A1'].value = "Launch-Profile-Template"
         my_sheet['A3'].value = "Required"
@@ -542,10 +542,11 @@ def launchprofiledownloadfile():
         my_sheet['N4'].value = "APOCIPQ"
         my_sheet['O4'].value = "LOCIPQ"
         my_sheet['P4'].value = "FCCDate"
-        my_sheet['Q4'].value = "DCVolume"
-        my_sheet['R4'].value = "DTSVolume"
-        my_sheet['S4'].value = "MSStoreIPQ"
-        my_sheet['T4'].value = "Notes"
+        my_sheet['Q4'].value = "PQSDate"
+        my_sheet['R4'].value = "DCVolume"
+        my_sheet['S4'].value = "DTSVolume"
+        my_sheet['T4'].value = "MSStoreIPQ"
+        my_sheet['U4'].value = "Notes"
 
         print(len(paramlist))
         print(length);
