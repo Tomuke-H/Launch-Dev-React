@@ -644,7 +644,7 @@
           data.forEach(mutlipleregions);
           data.push({name: 'regionstring', value: regionstring});
           function mutlipleregions(value){
-            if(value.value === "AOC" || value.value === "EOC" || value.value === "APOC" || value.value === "LOC"){
+            if(value.value === "AOC" || value.value === "EOC" || value.value === "APOC" || value.value === "LOC" || value.value === "TBD"){
               foundOne = value.value.concat(";");
               regionstring += foundOne
             }
