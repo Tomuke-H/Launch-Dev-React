@@ -39,7 +39,9 @@ else:
 
 app = Flask(__name__)
 app.config.from_object(app_config)
-Session(app)
+#sess = Session() # the standard session
+#sess.init_app(app)
+#Session(app)
 
 
 # This section is needed for url_for("foo", _external=True) to automatically
@@ -84,6 +86,33 @@ def launches():
     #    return redirect(url_for("login"))
     return render_template('launchprofile.html')
 
+@app.route('/launchmapping')
+def launchmapping():
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+    return render_template('launchmapping.html')
+
+@app.route('/freightcalculator')
+def freightcalculator():
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+    return render_template('freightcalculator.html')
+@app.route('/masterdata')
+def masterdata():
+    #if not session.get("user"):
+    #    return redirect(url_for("login"))
+    return render_template('masterdata.html')
+
+#@app.route('/visits-counter/')
+#def visits():
+    #for i in session:
+    #    print(i, session[i])
+    #if 'visits' in session:
+    #    session['visits'] = session.get('visits') + 1  # reading and updating session data
+    #else:
+    #    session['visits'] = 1 # setting session data
+    #return "Total visits: {}".format(session.get('visits'))
+
 @app.route(app_config.REDIRECT_PATH)  # Its absolute URL must match your app's redirect_uri set in AAD
 def authorized():
     try:
@@ -106,6 +135,9 @@ def logout():
         "?post_logout_redirect_uri=" + url_for("/", _external=True))
 
 # Auth Helper Functions
+
+
+
 
 def _load_cache():
     cache = msal.SerializableTokenCache()
@@ -405,9 +437,9 @@ def launchskuattributes():
     #    return redirect(url_for("login"))
     if request.method == 'GET':
         data = request.get_json()
-        conn = getSQLConnection(app_config=app_config)
+        conn = getSQLConnection(app_config=app_config,max=True)
         with conn.cursor() as cursor:
-            id = cursor.execute("SELECT DISTINCT Planningbusinessunit FROM [launchmodeldev].[dbo].[BU]")
+            id = cursor.execute(" SELECT DISTINCT PlanningBusinessUnit as Planningbusinessunit from dw.dimmaterial where IsDeviceActiveSku = 1 ")
             columns = [column[0] for column in id.description]
             print(columns)
             results = []
@@ -625,7 +657,39 @@ def launchplandropdown():
         return jsonify(results)
 
 
+@app.route("/maxtest")
 
+def maxtest():
+
+    conn = getSQLConnection(app_config, max=True)
+
+    with conn.cursor() as cursor:
+
+            selectall = text('SELECT count(*) FROM dw.dimmaterial')
+
+            id = cursor.execute(str(selectall))
+
+            for row in id.fetchall():
+
+                row = list(row)
+
+                print(row)
+
+    with conn.cursor() as cursor:
+
+        selectall = text('SELECT count(*) FROM deliverods.shipmentdetails')
+
+        id = cursor.execute(str(selectall))
+
+        for row in id.fetchall():
+
+            row = list(row)
+
+            print(row)
+
+    conn.close()
+
+    return redirect(url_for('home'))
 
 
 

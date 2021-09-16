@@ -11,7 +11,9 @@ def getSQLToken(app_config):
     token = context.acquire_token_for_client(scopes=[app_config.SQLRESOURCE])
     return token
 
-def getSQLConnection(app_config):
+def getSQLConnection(app_config,max=False):
+
+    
     token = getSQLToken(app_config)
     tokenb = bytes(token["access_token"], "UTF-8")
     exptoken = b''
@@ -23,8 +25,15 @@ def getSQLConnection(app_config):
     tokenstruct = struct.pack("=i", len(exptoken)) + exptoken
 
     driver = "Driver={ODBC Driver 17 for SQL Server}"
-    server = ";SERVER={0}".format(app_config.SQLSERVER)
-    database = ";DATABASE={0}".format(app_config.SQLDATABASE)
+    #server = ";SERVER={0}".format(app_config.SQLSERVER)
+    #database = ";DATABASE={0}".format(app_config.SQLDATABASE)
+
+    if max is False:
+        server = ";SERVER={0}".format(app_config.SQLSERVER)
+        database = ";DATABASE={0}".format(app_config.SQLDATABASE)
+    else:
+        server = ";SERVER={0}".format(app_config.MAXSERVER)
+        database = ";DATABASE={0}".format(app_config.MAXDATABASE)
 
     connString = driver + server + database
 
