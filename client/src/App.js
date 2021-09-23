@@ -9,6 +9,7 @@ import Register from './components/Register';
 import ProtectedRoute from './components/ProtectedRoute';
 import FetchUser from './components/FetchUser';
 import LaunchProfiles from './pages/LaunchProfiles';
+import LaunchPlans from './pages/LaunchPlans';
 
 function App() {
   return (
@@ -19,7 +20,7 @@ function App() {
           <Switch>
             <Route exact path='/' component={Home}/>
             <Route exact path='/profiles' component={LaunchProfiles}/>
-            <Route exact path='/components' component={ComponentDemo}/>
+            <Route exact path='/plans' component={LaunchPlans}/>
             <Route exact path='/login' component={Login}/>
             <Route exact path='/register' component={Register}/>
             <Route component={()=><p>react 404 path not found</p>} />
