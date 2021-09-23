@@ -38,9 +38,9 @@ const Navbar = (props) => {
           Home
         </Menu.Item >
       </Link>
-      <Link to='/things'>
-        <Menu.Item active={location.pathname === '/things'} >
-          Things
+      <Link to='/profiles'>
+        <Menu.Item active={location.pathname === '/profiles'} >
+          Launch Profiles
         </Menu.Item >
       </Link>
       <Link to='/components'>
