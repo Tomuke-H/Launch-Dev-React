@@ -18,12 +18,12 @@ const Navbar = (props) => {
     return (
       <>
         <Link to='/login'>
-          <Menu.Item active={location.pathname == '/login'} >
+          <Menu.Item active={location.pathname === '/login'} >
             Login
           </Menu.Item >
         </Link>
         <Link to='/register'>
-          <Menu.Item active={location.pathname == '/register'} >
+          <Menu.Item active={location.pathname === '/register'} >
             Register
           </Menu.Item >
         </Link>
@@ -34,17 +34,17 @@ const Navbar = (props) => {
   return(
     <Menu>
       <Link to='/'>
-        <Menu.Item active={location.pathname == '/'} >
+        <Menu.Item active={location.pathname === '/'} >
           Home
         </Menu.Item >
       </Link>
       <Link to='/things'>
-        <Menu.Item active={location.pathname == '/things'} >
+        <Menu.Item active={location.pathname === '/things'} >
           Things
         </Menu.Item >
       </Link>
       <Link to='/components'>
-        <Menu.Item active={location.pathname == '/components'} >
+        <Menu.Item active={location.pathname === '/components'} >
           Components
         </Menu.Item >
       </Link>
